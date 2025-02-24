@@ -1,4 +1,3 @@
-
 import { toast } from '@/hooks/use-toast';
 import { Document } from '@/types';
 
@@ -114,8 +113,8 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
       }
     }
 
-    // סטנדרטיזציה של המסמך
-    const standardizeResponse = await fetch(`${BASE_URL}/api/standardize/batch`, {
+    // סטנדרטיזציה של המסמך - ניסיון ראשון
+    let standardizeResponse = await fetch(`${BASE_URL}/api/standardize`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
@@ -123,27 +122,52 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
         'X-API-Key': API_KEY
       },
       body: JSON.stringify({
-        documentIds: [documentId],
+        documentId: documentId,
         schemaId: 'mortgage_documents',
         displayMode: 'auto',
         effortLevel: 'high'
       })
     });
 
+    // אם הניסיון הראשון נכשל, ננסה נתיב חלופי
     if (!standardizeResponse.ok) {
-      throw new Error('שגיאה בסטנדרטיזציה של המסמך');
+      console.log('First standardization attempt failed, trying alternative endpoint...');
+      standardizeResponse = await fetch(`${BASE_URL}/standardize`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json',
+          'X-API-Key': API_KEY
+        },
+        body: JSON.stringify({
+          documentId: documentId,
+          schemaId: 'mortgage_documents',
+          displayMode: 'auto',
+          effortLevel: 'high'
+        })
+      });
     }
 
-    const { standardizationIds } = await standardizeResponse.json();
+    if (!standardizeResponse.ok) {
+      const errorData = await standardizeResponse.json();
+      console.error('Standardization error details:', errorData);
+      console.error('Standardization error status:', standardizeResponse.status);
+      throw new Error(`שגיאה בסטנדרטיזציה של המסמך: ${JSON.stringify(errorData)}`);
+    }
+
+    const { standardizationId } = await standardizeResponse.json();
+    console.log('Standardization successful. ID:', standardizationId);
 
     // קבלת תוצאות הניתוח
-    const resultsResponse = await fetch(`${BASE_URL}/standardization/${standardizationIds[0]}`, {
+    const resultsResponse = await fetch(`${BASE_URL}/standardization/${standardizationId}`, {
       headers: {
         'X-API-Key': API_KEY
       }
     });
 
     if (!resultsResponse.ok) {
+      const errorData = await resultsResponse.json();
+      console.error('Results error details:', errorData);
       throw new Error('שגיאה בקבלת תוצאות הניתוח');
     }
 
