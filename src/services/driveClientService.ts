@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { Client, Document } from '@/types';
 import { listFolderContents, setFolderPermissions } from './googleDrive';
@@ -64,11 +65,13 @@ export const loadExistingClients = async (accessToken: string, parentFolderId: s
 
 export const updateDocumentInDrive = async (accessToken: string, document: Document): Promise<void> => {
   try {
+    // קודם כל מוודאים שיש לנו הרשאות עריכה לקובץ
+    await ensureFilePermissions(accessToken, document.id);
+    
     // מכין את המידע שיישמר בתיאור הקובץ
     const documentMetadata = {
       description: document.description,
       type: document.type,
-      // אפשר להוסיף כאן שדות נוספים בעתיד
     };
 
     const response = await fetch(`https://www.googleapis.com/drive/v3/files/${document.id}`, {
@@ -90,6 +93,30 @@ export const updateDocumentInDrive = async (accessToken: string, document: Docum
   } catch (error) {
     console.error('Error updating document metadata:', error);
     throw error;
+  }
+};
+
+// פונקציה חדשה להבטחת הרשאות לקובץ
+const ensureFilePermissions = async (accessToken: string, fileId: string) => {
+  try {
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        role: 'writer',
+        type: 'user',
+        emailAddress: localStorage.getItem('user_email') // נדרש לשמור את המייל של המשתמש בהתחברות
+      })
+    });
+
+    if (!response.ok) {
+      console.warn('Could not set file permissions:', await response.text());
+    }
+  } catch (error) {
+    console.warn('Error setting file permissions:', error);
   }
 };
 

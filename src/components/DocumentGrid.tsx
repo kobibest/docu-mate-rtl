@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import DocumentUploader from './DocumentUploader';
 import { updateDocumentInDrive } from '@/services/driveClientService';
 import { useToast } from "./ui/use-toast";
+import { useState } from 'react';
 
 interface DocumentGridProps {
   documents: Document[];
@@ -15,6 +16,7 @@ interface DocumentGridProps {
 
 const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onUploadComplete }: DocumentGridProps) => {
   const { toast } = useToast();
+  const [localDocuments, setLocalDocuments] = useState<{ [key: string]: { description: string } }>({});
   
   const handleDocumentUpdate = async (updatedDoc: Document) => {
     try {
@@ -38,6 +40,22 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
 
   const handleTypeChange = (doc: Document, newType: Document['type']) => {
     handleDocumentUpdate({ ...doc, type: newType });
+  };
+
+  const handleDescriptionChange = (doc: Document, newDescription: string) => {
+    // עדכון מקומי של התיאור
+    setLocalDocuments(prev => ({
+      ...prev,
+      [doc.id]: { ...prev[doc.id], description: newDescription }
+    }));
+  };
+
+  const handleDescriptionBlur = (doc: Document) => {
+    // שליחה לשרת רק כשהמשתמש מסיים להקליד (עוזב את השדה)
+    const localDoc = localDocuments[doc.id];
+    if (localDoc && localDoc.description !== doc.description) {
+      handleDocumentUpdate({ ...doc, description: localDoc.description });
+    }
   };
 
   return (
@@ -84,10 +102,9 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
               </select>
               <textarea
                 className="w-full min-h-[80px] bg-gray-50 border border-gray-300 rounded-md px-3 py-2"
-                value={doc.description}
-                onChange={(e) =>
-                  handleDocumentUpdate({ ...doc, description: e.target.value })
-                }
+                value={localDocuments[doc.id]?.description ?? doc.description}
+                onChange={(e) => handleDescriptionChange(doc, e.target.value)}
+                onBlur={() => handleDescriptionBlur(doc)}
               />
               <div className="text-sm text-gray-600 space-y-1 text-right">
                 <div>הועלה: {format(doc.uploadDate, 'dd/MM/yyyy')}</div>
