@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
-  base: "/your-repo-name/", // Add this line - replace "your-repo-name" with your actual repository name
+  base: "/docu-mate-rtl/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
