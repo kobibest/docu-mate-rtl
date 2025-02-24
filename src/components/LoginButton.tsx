@@ -1,5 +1,6 @@
 
-import { GoogleLogin, useGoogleLogin } from '@react-oauth/google';
+import { useEffect } from 'react';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useToast } from "@/components/ui/use-toast";
 import { createRootFolder } from '@/services/googleDrive';
 
@@ -10,28 +11,40 @@ interface LoginButtonProps {
 const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
   const { toast } = useToast();
 
+  useEffect(() => {
+    // בדיקה אם יש כבר טוקן שמור
+    const checkExistingToken = async () => {
+      const accessToken = localStorage.getItem('google_access_token');
+      const rootFolderId = localStorage.getItem('root_folder_id');
+      
+      if (accessToken && rootFolderId) {
+        onRootFolderCreated(rootFolderId);
+      }
+    };
+
+    checkExistingToken();
+  }, [onRootFolderCreated]);
+
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       console.log('Login Success:', tokenResponse);
       
       try {
-        // יצירת תיקיית השורש עם ה-access_token
         const folder = await createRootFolder(tokenResponse.access_token);
         
-        // שמירת ה-access token ו-folder id ב-localStorage
         localStorage.setItem('google_access_token', tokenResponse.access_token);
         localStorage.setItem('root_folder_id', folder.id);
         onRootFolderCreated(folder.id);
         
         toast({
           title: "התחברות הצליחה",
-          description: "התחברת בהצלחה עם חשבון Google ונוצרה תיקיית brokerApp",
+          description: "התחברת בהצלחה עם חשבון Google",
         });
       } catch (error) {
         console.error('Error in login process:', error);
         toast({
-          title: "שגיאה ביצירת התיקייה",
-          description: "ההתחברות הצליחה אך הייתה בעיה ביצירת תיקיית brokerApp",
+          title: "שגיאה",
+          description: "אירעה שגיאה בתהליך ההתחברות",
           variant: "destructive",
         });
       }

@@ -8,11 +8,6 @@ export const createRootFolder = async (accessToken: string) => {
       return existingFolder;
     }
 
-    // מדפיס את ה-token לצורך דיבוג (רק את התחלה וסוף)
-    const tokenStart = accessToken.substring(0, 10);
-    const tokenEnd = accessToken.substring(accessToken.length - 10);
-    console.log(`Using token: ${tokenStart}...${tokenEnd}`);
-
     // יצירת תיקייה חדשה
     const response = await fetch('https://www.googleapis.com/drive/v3/files', {
       method: 'POST',
@@ -26,33 +21,15 @@ export const createRootFolder = async (accessToken: string) => {
       }),
     });
 
-    const responseText = await response.text(); // קודם נקרא את התוכן כטקסט
-    console.log('Full response:', responseText);
-
     if (!response.ok) {
-      console.error('Response status:', response.status);
-      console.error('Response status text:', response.statusText);
-      console.error('Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      let errorMessage = `Failed to create folder (Status: ${response.status})`;
-      try {
-        const errorData = JSON.parse(responseText);
-        console.error('Parsed error data:', errorData);
-        if (errorData.error && errorData.error.message) {
-          errorMessage += `: ${errorData.error.message}`;
-        }
-      } catch (e) {
-        console.error('Could not parse error response as JSON:', e);
-      }
-      
-      throw new Error(errorMessage);
+      throw new Error(`Failed to create folder: ${response.statusText}`);
     }
 
-    const folder = JSON.parse(responseText);
+    const folder = await response.json();
     console.log('Created root folder:', folder);
     return folder;
   } catch (error) {
-    console.error('Detailed error in createRootFolder:', error);
+    console.error('Error in createRootFolder:', error);
     throw error;
   }
 };
@@ -69,29 +46,38 @@ export const searchFolder = async (accessToken: string, folderName: string) => {
       }
     );
 
-    const responseText = await response.text();
-    console.log('Search response text:', responseText);
-
     if (!response.ok) {
-      console.error('Search response status:', response.status);
-      console.error('Search response status text:', response.statusText);
-      let errorMessage = `Failed to search for folder (Status: ${response.status})`;
-      try {
-        const errorData = JSON.parse(responseText);
-        if (errorData.error && errorData.error.message) {
-          errorMessage += `: ${errorData.error.message}`;
-        }
-      } catch (e) {
-        console.error('Could not parse search error response as JSON:', e);
-      }
-      throw new Error(errorMessage);
+      throw new Error(`Failed to search for folder: ${response.statusText}`);
     }
 
-    const data = JSON.parse(responseText);
-    console.log('Search folder response:', data);
+    const data = await response.json();
     return data.files?.[0] || null;
   } catch (error) {
-    console.error('Detailed error in searchFolder:', error);
+    console.error('Error in searchFolder:', error);
+    throw error;
+  }
+};
+
+export const listFolderContents = async (accessToken: string, folderId: string) => {
+  try {
+    const query = `'${folderId}' in parents and trashed=false`;
+    const response = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to list folder contents: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.files || [];
+  } catch (error) {
+    console.error('Error listing folder contents:', error);
     throw error;
   }
 };

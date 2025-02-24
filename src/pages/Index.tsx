@@ -4,7 +4,7 @@ import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
 import LoginButton from '@/components/LoginButton';
 import { Client, Document } from '@/types';
-import { createNewClient } from '@/services/driveClientService';
+import { createNewClient, loadExistingClients } from '@/services/driveClientService';
 import { useToast } from "@/components/ui/use-toast";
 import '@fontsource/heebo';
 
@@ -15,13 +15,36 @@ const Index = () => {
   const { toast } = useToast();
   const [rootFolderId, setRootFolderId] = useState<string | null>(null);
 
+  const loadClients = async (folderId: string) => {
+    const accessToken = localStorage.getItem('google_access_token');
+    if (!accessToken) return;
+
+    try {
+      const existingClients = await loadExistingClients(accessToken, folderId);
+      setClients(existingClients);
+    } catch (error) {
+      console.error('Error loading clients:', error);
+      toast({
+        title: "שגיאה בטעינת לקוחות",
+        description: "אירעה שגיאה בטעינת רשימת הלקוחות",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     // טעינת מזהה תיקיית השורש בעת טעינת הדף
     const storedFolderId = localStorage.getItem('root_folder_id');
     if (storedFolderId) {
       setRootFolderId(storedFolderId);
+      loadClients(storedFolderId);
     }
   }, []);
+
+  const handleRootFolderCreated = (folderId: string) => {
+    setRootFolderId(folderId);
+    loadClients(folderId);
+  };
 
   const handleCreateClient = async (name: string) => {
     const accessToken = localStorage.getItem('google_access_token');
@@ -64,7 +87,7 @@ const Index = () => {
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-heebo">
-      <LoginButton onRootFolderCreated={setRootFolderId} />
+      <LoginButton onRootFolderCreated={handleRootFolderCreated} />
       <div className="flex h-screen">
         <ClientList
           clients={clients}

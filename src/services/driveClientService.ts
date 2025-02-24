@@ -1,6 +1,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { Client } from '@/types';
+import { listFolderContents } from './googleDrive';
 
 export const createClientFolder = async (accessToken: string, parentFolderId: string, clientName: string): Promise<string> => {
   try {
@@ -29,6 +30,23 @@ export const createClientFolder = async (accessToken: string, parentFolderId: st
   }
 };
 
+export const loadExistingClients = async (accessToken: string, parentFolderId: string): Promise<Client[]> => {
+  try {
+    const folders = await listFolderContents(accessToken, parentFolderId);
+    return folders
+      .filter(folder => folder.mimeType === 'application/vnd.google-apps.folder')
+      .map(folder => ({
+        id: uuidv4(),
+        name: folder.name,
+        documentCount: 0, // יעודכן בהמשך כשנטען את המסמכים
+        folderId: folder.id
+      }));
+  } catch (error) {
+    console.error('Error loading existing clients:', error);
+    throw error;
+  }
+};
+
 export const createNewClient = async (
   accessToken: string, 
   parentFolderId: string, 
@@ -39,6 +57,6 @@ export const createNewClient = async (
     id: uuidv4(),
     name: clientName,
     documentCount: 0,
-    folderId // שמירת מזהה התיקייה לשימוש בהמשך
+    folderId
   };
 };
