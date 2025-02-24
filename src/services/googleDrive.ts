@@ -1,3 +1,4 @@
+import { SearchFileResponse } from "@/types/googleDrive";
 
 export const createRootFolder = async (accessToken: string) => {
   try {
@@ -65,7 +66,6 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
       return [];
     }
 
-    // שינוי השאילתה כך שתכלול את כל סוגי הקבצים
     const query = `'${folderId}' in parents and trashed=false`;
     const fields = 'files(id,name,description,mimeType,thumbnailLink,createdTime,modifiedTime,webContentLink,iconLink,size,parents)';
     
@@ -102,17 +102,8 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
       return [];
     }
 
-    // נסנן קבצים שאינם תיקיות
-    const files = data.files.filter(file => {
-      const isValid = file.mimeType !== 'application/vnd.google-apps.folder';
-      if (!isValid) {
-        console.log('Filtered out folder:', file.name);
-      }
-      return isValid;
-    });
-
-    console.log('Filtered files:', files);
-    return files;
+    // מחזירים את כל הקבצים ללא סינון - הסינון יתבצע בשירותים הספציפיים
+    return data.files;
   } catch (error) {
     console.error('Error listing folder contents:', error);
     throw error;
