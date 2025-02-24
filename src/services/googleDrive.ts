@@ -66,12 +66,14 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
     }
 
     const query = `'${folderId}' in parents and trashed=false`;
-    const fields = 'files(id,name,description,mimeType,thumbnailLink,createdTime,modifiedTime,webContentLink,iconLink,size,parents)';
+    const fields = 'files(id,name,description,mimeType,thumbnailLink,createdTime,modifiedTime,webContentLink,iconLink,size,parents),nextPageToken';
     
     const url = new URL('https://www.googleapis.com/drive/v3/files');
     url.searchParams.append('q', query);
     url.searchParams.append('fields', fields);
     url.searchParams.append('pageSize', '1000');
+    url.searchParams.append('supportsAllDrives', 'true');
+    url.searchParams.append('includeItemsFromAllDrives', 'true');
     url.searchParams.append('orderBy', 'createdTime desc');
     url.searchParams.append('spaces', 'drive');
     
