@@ -3,6 +3,8 @@ import { Document } from '@/types';
 import { documentTypes } from '@/data/mockData';
 import { format } from 'date-fns';
 import DocumentUploader from './DocumentUploader';
+import { updateDocumentInDrive } from '@/services/driveClientService';
+import { useToast } from "./ui/use-toast";
 
 interface DocumentGridProps {
   documents: Document[];
@@ -12,8 +14,30 @@ interface DocumentGridProps {
 }
 
 const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onUploadComplete }: DocumentGridProps) => {
+  const { toast } = useToast();
+  
+  const handleDocumentUpdate = async (updatedDoc: Document) => {
+    try {
+      const accessToken = localStorage.getItem('google_access_token');
+      if (!accessToken) {
+        throw new Error('No access token found');
+      }
+
+      await updateDocumentInDrive(accessToken, updatedDoc);
+      onDocumentUpdate(updatedDoc);
+
+    } catch (error) {
+      console.error('Error updating document:', error);
+      toast({
+        title: "שגיאה בעדכון המסמך",
+        description: "אירעה שגיאה בעדכון פרטי המסמך",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleTypeChange = (doc: Document, newType: Document['type']) => {
-    onDocumentUpdate({ ...doc, type: newType });
+    handleDocumentUpdate({ ...doc, type: newType });
   };
 
   return (
@@ -40,7 +64,7 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
                     className="w-full text-lg font-medium bg-transparent border-0 focus:ring-2 focus:ring-blue-500 rounded p-1"
                     value={doc.fileName}
                     onChange={(e) =>
-                      onDocumentUpdate({ ...doc, fileName: e.target.value })
+                      handleDocumentUpdate({ ...doc, fileName: e.target.value })
                     }
                   />
                 </div>
@@ -62,7 +86,7 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
                 className="w-full min-h-[80px] bg-gray-50 border border-gray-300 rounded-md px-3 py-2"
                 value={doc.description}
                 onChange={(e) =>
-                  onDocumentUpdate({ ...doc, description: e.target.value })
+                  handleDocumentUpdate({ ...doc, description: e.target.value })
                 }
               />
               <div className="text-sm text-gray-600 space-y-1 text-right">

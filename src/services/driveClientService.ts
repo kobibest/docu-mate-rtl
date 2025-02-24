@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { Client, Document } from '@/types';
 import { listFolderContents, setFolderPermissions } from './googleDrive';
@@ -63,6 +62,79 @@ export const loadExistingClients = async (accessToken: string, parentFolderId: s
   }
 };
 
+export const updateDocumentInDrive = async (accessToken: string, document: Document): Promise<void> => {
+  try {
+    // מכין את המידע שיישמר בתיאור הקובץ
+    const documentMetadata = {
+      description: document.description,
+      type: document.type,
+      // אפשר להוסיף כאן שדות נוספים בעתיד
+    };
+
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${document.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        description: JSON.stringify(documentMetadata)
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update document: ${response.statusText}`);
+    }
+
+    console.log('Document metadata updated successfully');
+  } catch (error) {
+    console.error('Error updating document metadata:', error);
+    throw error;
+  }
+};
+
+export const loadClientDocuments = async (accessToken: string, folderId: string): Promise<Document[]> => {
+  try {
+    console.log('Loading documents from folder:', folderId);
+    const files = await listFolderContents(accessToken, folderId);
+    console.log('Documents from API:', files);
+
+    // נסנן רק קבצים (לא תיקיות) ונמפה אותם למבנה הנדרש
+    return files
+      .filter(file => file.mimeType !== 'application/vnd.google-apps.folder')
+      .map(file => {
+        let description = '';
+        let type: Document['type'] = 'bank_statement'; // ברירת מחדל
+        
+        // מנסה לפענח את המטא-דאטה מהתיאור
+        if (file.description) {
+          try {
+            const metadata = JSON.parse(file.description);
+            description = metadata.description || '';
+            type = metadata.type || 'bank_statement';
+          } catch (e) {
+            console.warn('Could not parse document metadata:', e);
+            // אם יש שגיאה בפענוח, נשתמש בתיאור המקורי
+            description = file.description;
+          }
+        }
+
+        return {
+          id: file.id,
+          fileName: file.name,
+          description,
+          type,
+          thumbnail: file.thumbnailLink || file.iconLink || '/placeholder.svg',
+          uploadDate: new Date(file.createdTime),
+          lastModified: new Date(file.modifiedTime)
+        };
+      });
+  } catch (error) {
+    console.error('Error loading client documents:', error);
+    throw error;
+  }
+};
+
 export const createNewClient = async (
   accessToken: string, 
   parentFolderId: string, 
@@ -75,28 +147,4 @@ export const createNewClient = async (
     documentCount: 0,
     folderId
   };
-};
-
-export const loadClientDocuments = async (accessToken: string, folderId: string): Promise<Document[]> => {
-  try {
-    console.log('Loading documents from folder:', folderId);
-    const files = await listFolderContents(accessToken, folderId);
-    console.log('Documents from API:', files);
-
-    // נסנן רק קבצים (לא תיקיות) ונמפה אותם למבנה הנדרש
-    return files
-      .filter(file => file.mimeType !== 'application/vnd.google-apps.folder')
-      .map(file => ({
-        id: file.id,
-        fileName: file.name,
-        description: file.description || '',
-        type: 'bank_statement', // ברירת מחדל
-        thumbnail: file.thumbnailLink || file.iconLink || '/placeholder.svg',
-        uploadDate: new Date(file.createdTime),
-        lastModified: new Date(file.modifiedTime)
-      }));
-  } catch (error) {
-    console.error('Error loading client documents:', error);
-    throw error;
-  }
 };
