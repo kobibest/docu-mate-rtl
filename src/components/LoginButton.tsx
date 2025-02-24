@@ -1,16 +1,30 @@
 
 import { GoogleLogin } from '@react-oauth/google';
 import { useToast } from "@/components/ui/use-toast";
+import { createRootFolder } from '@/services/googleDrive';
 
 const LoginButton = () => {
   const { toast } = useToast();
 
-  const handleSuccess = (credentialResponse: any) => {
+  const handleSuccess = async (credentialResponse: any) => {
     console.log('Login Success:', credentialResponse);
-    toast({
-      title: "התחברות הצליחה",
-      description: "התחברת בהצלחה עם חשבון Google",
-    });
+    
+    try {
+      // יצירת תיקיית השורש
+      const folder = await createRootFolder(credentialResponse.access_token);
+      
+      toast({
+        title: "התחברות הצליחה",
+        description: "התחברת בהצלחה עם חשבון Google ונוצרה תיקיית brokerApp",
+      });
+    } catch (error) {
+      console.error('Error in login process:', error);
+      toast({
+        title: "שגיאה ביצירת התיקייה",
+        description: "ההתחברות הצליחה אך הייתה בעיה ביצירת תיקיית brokerApp",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleError = () => {
