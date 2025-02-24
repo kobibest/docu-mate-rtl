@@ -1,107 +1,73 @@
 
-import { useEffect, useState } from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import { LogIn, LogOut } from "lucide-react";
+import { useCallback, useEffect } from 'react';
+import { Button } from './ui/button';
 import { createRootFolder } from '@/services/googleDrive';
+import { useGoogleLogin } from '@react-oauth/google';
+import { toast } from './ui/use-toast';
 
 interface LoginButtonProps {
   onRootFolderCreated: (folderId: string) => void;
 }
 
 const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
-  const { toast } = useToast();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const checkExistingToken = async () => {
-      const accessToken = localStorage.getItem('google_access_token');
-      const rootFolderId = localStorage.getItem('root_folder_id');
-      
-      if (accessToken && rootFolderId) {
-        console.log('Found existing session, using stored folder ID:', rootFolderId);
-        setIsLoggedIn(true);
-        onRootFolderCreated(rootFolderId);
-      }
-    };
-
-    checkExistingToken();
-  }, []);
-
   const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      console.log('Login Success, getting user info...');
-      
+    onSuccess: async (response) => {
       try {
+        localStorage.setItem('google_access_token', response.access_token);
+        
         // קבלת פרטי המשתמש
         const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+          headers: { Authorization: `Bearer ${response.access_token}` },
         });
-        
-        const userInfo = await userResponse.json();
-        console.log('User info:', userInfo);
-        localStorage.setItem('user_email', userInfo.email);
-        
-        console.log('Getting root folder...');
-        const folder = await createRootFolder(tokenResponse.access_token);
-        
-        localStorage.setItem('google_access_token', tokenResponse.access_token);
+        const userData = await userResponse.json();
+        localStorage.setItem('user_email', userData.email);
+
+        // יצירת תיקיית שורש
+        const folder = await createRootFolder(response.access_token);
         localStorage.setItem('root_folder_id', folder.id);
-        
-        console.log('Setting up new session with folder:', folder.id);
-        setIsLoggedIn(true);
         onRootFolderCreated(folder.id);
-        
+
         toast({
-          title: "התחברות הצליחה",
-          description: "התחברת בהצלחה עם חשבון Google",
+          title: 'התחברות בוצעה בהצלחה',
+          description: 'התחברת בהצלחה למערכת',
         });
       } catch (error) {
         console.error('Error in login process:', error);
         toast({
-          title: "שגיאה",
-          description: "אירעה שגיאה בתהליך ההתחברות",
-          variant: "destructive",
+          title: 'שגיאה בהתחברות',
+          description: 'אירעה שגיאה בתהליך ההתחברות',
+          variant: 'destructive',
         });
       }
     },
-    scope: 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file email profile',
-    onError: () => {
+    onError: (error) => {
+      console.error('Login Failed:', error);
       toast({
-        title: "שגיאה בהתחברות",
-        description: "אירעה שגיאה בתהליך ההתחברות. אנא נסה שוב.",
-        variant: "destructive",
+        title: 'שגיאה בהתחברות',
+        description: 'אירעה שגיאה בתהליך ההתחברות',
+        variant: 'destructive',
       });
-    }
+    },
+    scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.metadata https://www.googleapis.com/auth/userinfo.email',
   });
 
-  const handleLogout = () => {
-    localStorage.removeItem('google_access_token');
-    localStorage.removeItem('root_folder_id');
-    localStorage.removeItem('user_email');
-    setIsLoggedIn(false);
-    window.location.reload();
+  useEffect(() => {
+    const token = localStorage.getItem('google_access_token');
+    const folderId = localStorage.getItem('root_folder_id');
     
-    toast({
-      title: "התנתקות הצליחה",
-      description: "התנתקת בהצלחה מחשבון Google",
-    });
-  };
+    if (token && folderId) {
+      onRootFolderCreated(folderId);
+    }
+  }, [onRootFolderCreated]);
 
   return (
-    <div className="flex justify-center items-center gap-4 p-4">
-      {!isLoggedIn ? (
-        <Button onClick={() => login()} variant="default">
-          <LogIn className="ml-2" />
-          התחבר עם Google
-        </Button>
-      ) : (
-        <Button onClick={handleLogout} variant="destructive">
-          <LogOut className="ml-2" />
-          התנתק מ-Google
-        </Button>
-      )}
+    <div className="flex justify-center p-4">
+      <Button
+        onClick={() => login()}
+        className="bg-blue-600 hover:bg-blue-700 text-white"
+      >
+        התחבר עם Google
+      </Button>
     </div>
   );
 };
