@@ -6,16 +6,19 @@ export const clients: Client[] = [
     id: '1',
     name: 'ישראל ישראלי',
     documentCount: 3,
+    folderId: 'mock-folder-1'
   },
   {
     id: '2',
     name: 'חיים כהן',
     documentCount: 2,
+    folderId: 'mock-folder-2'
   },
   {
     id: '3',
     name: 'שרה לוי',
     documentCount: 4,
+    folderId: 'mock-folder-3'
   },
 ];
 
