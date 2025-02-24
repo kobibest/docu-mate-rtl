@@ -23,11 +23,18 @@ const getFileContent = async (fileId: string): Promise<string> => {
   }
 
   const blob = await response.blob();
+  console.log('File blob:', blob);
+  console.log('File type:', blob.type);
+  
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64data = (reader.result as string)?.split(',')[1] || '';
-      resolve(base64data);
+      const base64String = reader.result as string;
+      console.log('Base64 string length:', base64String.length);
+      // נוודא שאנחנו מקבלים רק את החלק של ה-base64 בלי המטא-דאטה
+      const base64Content = base64String.split(',')[1] || base64String;
+      console.log('Extracted base64 length:', base64Content.length);
+      resolve(base64Content);
     };
     reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsDataURL(blob);
@@ -38,6 +45,16 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
   try {
     // קבלת תוכן הקובץ ב-base64
     const base64Content = await getFileContent(document.id);
+    console.log('Sending document with name:', document.fileName);
+    
+    const requestBody = {
+      content: base64Content,
+      filename: document.fileName
+    };
+    console.log('Request body:', {
+      ...requestBody,
+      content: `${base64Content.substring(0, 100)}... (truncated)`
+    });
     
     // העלאת המסמך
     const uploadResponse = await fetch(`${BASE_URL}/document`, {
@@ -47,10 +64,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
         'content-type': 'application/json',
         'X-API-Key': API_KEY
       },
-      body: JSON.stringify({
-        content: base64Content,
-        filename: document.fileName
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!uploadResponse.ok) {
