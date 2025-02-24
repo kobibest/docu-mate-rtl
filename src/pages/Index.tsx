@@ -15,6 +15,7 @@ const Index = () => {
   const { toast } = useToast();
   const [rootFolderId, setRootFolderId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
 
   const loadClients = async (folderId: string) => {
     console.log('Loading clients for folder:', folderId);
@@ -38,6 +39,7 @@ const Index = () => {
   const handleClientSelect = async (clientId: string) => {
     console.log('Selected client:', clientId);
     setSelectedClient(clientId);
+    setClientDocuments(prev => ({ ...prev, [clientId]: [] })); // אתחול מערך ריק לפני הטעינה
     
     const accessToken = localStorage.getItem('google_access_token');
     if (!accessToken) {
@@ -59,12 +61,14 @@ const Index = () => {
     if (!accessToken) return;
 
     console.log('Loading documents for client folder:', folderId);
+    setIsLoadingDocs(true);
 
     try {
       const documents = await loadDocs(accessToken, folderId);
       console.log('Loaded documents:', documents);
       
       if (selectedClient) {
+        console.log('Updating documents for client:', selectedClient);
         setClientDocuments(prev => ({
           ...prev,
           [selectedClient]: documents
@@ -82,6 +86,8 @@ const Index = () => {
         description: "אירעה שגיאה בטעינת מסמכי הלקוח",
         variant: "destructive",
       });
+    } finally {
+      setIsLoadingDocs(false);
     }
   };
 
@@ -94,6 +100,15 @@ const Index = () => {
       loadClients(storedFolderId);
     }
   }, [isInitialized]);
+
+  useEffect(() => {
+    if (selectedClient) {
+      const client = clients.find(c => c.id === selectedClient);
+      if (client) {
+        loadClientDocuments(client.folderId);
+      }
+    }
+  }, [selectedClient]); // רק כשמשתנה הלקוח הנבחר
 
   const handleRootFolderCreated = (folderId: string) => {
     console.log('Root folder created:', folderId);
@@ -154,7 +169,11 @@ const Index = () => {
         <main className="flex-1 overflow-y-auto p-6">
           <h1 className="text-2xl font-bold mb-6">ניהול מסמכים</h1>
           {selectedClient ? (
-            clientDocuments[selectedClient] ? (
+            isLoadingDocs ? (
+              <div className="text-center text-gray-500 mt-10">
+                טוען מסמכים...
+              </div>
+            ) : clientDocuments[selectedClient] ? (
               <DocumentGrid
                 documents={clientDocuments[selectedClient]}
                 onDocumentUpdate={handleDocumentUpdate}
@@ -168,7 +187,7 @@ const Index = () => {
               />
             ) : (
               <div className="text-center text-gray-500 mt-10">
-                טוען מסמכים...
+                אין מסמכים בתיקייה זו
               </div>
             )
           ) : (
