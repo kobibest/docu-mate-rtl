@@ -124,7 +124,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
       },
       body: JSON.stringify({
         documentId: documentId,
-        schemaId: '5fcdfa0f',  // עדכון ל-ID הנכון של הסכמה
+        schemaId: 'a7223a38',  // עדכון ל-ID הנכון של הסכמה
         displayMode: 'auto',
         effortLevel: 'high'
       })
@@ -142,7 +142,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
         },
         body: JSON.stringify({
           documentId: documentId,
-          schemaId: '5fcdfa0f',  // עדכון ל-ID הנכון של הסכמה
+          schemaId: 'a7223a38',  // עדכון ל-ID הנכון של הסכמה
           displayMode: 'auto',
           effortLevel: 'high'
         })
