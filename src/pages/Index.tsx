@@ -3,13 +3,13 @@ import { useState } from 'react';
 import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
 import LoginButton from '@/components/LoginButton';
-import { clients, documents } from '@/data/mockData';
-import { Document } from '@/types';
+import { Client, Document } from '@/types';
 import '@fontsource/heebo';
 
 const Index = () => {
   const [selectedClient, setSelectedClient] = useState<string | undefined>();
-  const [clientDocuments, setClientDocuments] = useState(documents);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [clientDocuments, setClientDocuments] = useState<Record<string, Document[]>>({});
 
   const handleDocumentUpdate = (updatedDoc: Document) => {
     if (!selectedClient) return;
