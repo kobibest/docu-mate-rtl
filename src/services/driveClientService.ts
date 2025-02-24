@@ -36,6 +36,12 @@ export const createClientFolder = async (accessToken: string, parentFolderId: st
 
 export const loadExistingClients = async (accessToken: string, parentFolderId: string): Promise<Client[]> => {
   try {
+    console.log('Loading clients with access token:', accessToken?.substring(0, 10) + '...');
+    console.log('Parent folder ID:', parentFolderId);
+    
+    // וידוא שיש הרשאות לתיקיית האב
+    await ensureFilePermissions(accessToken, parentFolderId);
+    
     const files = await listFolderContents(accessToken, parentFolderId);
     console.log('Files before filtering:', files);
     
@@ -45,6 +51,8 @@ export const loadExistingClients = async (accessToken: string, parentFolderId: s
     
     // לכל תיקייה, נטען את מספר המסמכים בה
     const clientsWithDocuments = await Promise.all(folders.map(async folder => {
+      // וידוא הרשאות לכל תיקיית לקוח
+      await ensureFilePermissions(accessToken, folder.id);
       const folderContents = await listFolderContents(accessToken, folder.id);
       const documentCount = folderContents.filter(file => file.mimeType !== 'application/vnd.google-apps.folder').length;
       
