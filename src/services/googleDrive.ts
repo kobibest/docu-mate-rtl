@@ -1,4 +1,3 @@
-import { SearchFileResponse } from "@/types/googleDrive";
 
 export const createRootFolder = async (accessToken: string) => {
   try {
@@ -102,7 +101,6 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
       return [];
     }
 
-    // מחזירים את כל הקבצים ללא סינון - הסינון יתבצע בשירותים הספציפיים
     return data.files;
   } catch (error) {
     console.error('Error listing folder contents:', error);
