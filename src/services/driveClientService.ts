@@ -39,12 +39,20 @@ export const loadExistingClients = async (accessToken: string, parentFolderId: s
     const folders = files.filter(file => file.mimeType === 'application/vnd.google-apps.folder');
     console.log('Folders after filtering:', folders);
     
-    return folders.map(folder => ({
-      id: uuidv4(),
-      name: folder.name,
-      documentCount: 0,
-      folderId: folder.id
+    // לכל תיקייה, נטען את מספר המסמכים בה
+    const clientsWithDocuments = await Promise.all(folders.map(async folder => {
+      const folderContents = await listFolderContents(accessToken, folder.id);
+      const documentCount = folderContents.filter(file => file.mimeType !== 'application/vnd.google-apps.folder').length;
+      
+      return {
+        id: uuidv4(),
+        name: folder.name,
+        documentCount,
+        folderId: folder.id
+      };
     }));
+
+    return clientsWithDocuments;
   } catch (error) {
     console.error('Error loading existing clients:', error);
     throw error;
@@ -71,7 +79,9 @@ export const loadClientDocuments = async (accessToken: string, folderId: string)
     const files = await listFolderContents(accessToken, folderId);
     console.log('Documents from API:', files);
 
+    // נסנן רק קבצים (לא תיקיות) ונמפה אותם למבנה הנדרש
     return files
+      .filter(file => file.mimeType !== 'application/vnd.google-apps.folder')
       .map(file => ({
         id: file.id,
         fileName: file.name,
