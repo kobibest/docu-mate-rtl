@@ -3,7 +3,11 @@ import { GoogleLogin, useGoogleLogin } from '@react-oauth/google';
 import { useToast } from "@/components/ui/use-toast";
 import { createRootFolder } from '@/services/googleDrive';
 
-const LoginButton = () => {
+interface LoginButtonProps {
+  onRootFolderCreated: (folderId: string) => void;
+}
+
+const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
   const { toast } = useToast();
 
   const login = useGoogleLogin({
@@ -14,8 +18,10 @@ const LoginButton = () => {
         // יצירת תיקיית השורש עם ה-access_token
         const folder = await createRootFolder(tokenResponse.access_token);
         
-        // שמירת ה-access token ב-localStorage
+        // שמירת ה-access token ו-folder id ב-localStorage
         localStorage.setItem('google_access_token', tokenResponse.access_token);
+        localStorage.setItem('root_folder_id', folder.id);
+        onRootFolderCreated(folder.id);
         
         toast({
           title: "התחברות הצליחה",

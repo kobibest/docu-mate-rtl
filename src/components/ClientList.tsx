@@ -1,20 +1,26 @@
 
+import { useState } from 'react';
 import { Client } from '@/types';
 import { cn } from '@/lib/utils';
 import { PlusCircle } from 'lucide-react';
+import NewClientDialog from './NewClientDialog';
 
 interface ClientListProps {
   clients: Client[];
   selectedClient?: string;
   onClientSelect: (clientId: string) => void;
+  onCreateClient: (name: string) => Promise<void>;
 }
 
-const ClientList = ({ clients, selectedClient, onClientSelect }: ClientListProps) => {
+const ClientList = ({ clients, selectedClient, onClientSelect, onCreateClient }: ClientListProps) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   return (
     <div className="w-64 h-full overflow-y-auto bg-white shadow-lg rounded-l-lg p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">לקוחות</h2>
         <button
+          onClick={() => setIsDialogOpen(true)}
           className="p-1 hover:bg-blue-50 rounded-full transition-colors"
           title="הוסף לקוח חדש"
         >
@@ -47,6 +53,11 @@ const ClientList = ({ clients, selectedClient, onClientSelect }: ClientListProps
           ))
         )}
       </div>
+      <NewClientDialog 
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onCreateClient={onCreateClient}
+      />
     </div>
   );
 };

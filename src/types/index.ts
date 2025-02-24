@@ -3,6 +3,7 @@ export interface Client {
   id: string;
   name: string;
   documentCount: number;
+  folderId: string;
 }
 
 export interface Document {
