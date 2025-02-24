@@ -60,24 +60,33 @@ export const searchFolder = async (accessToken: string, folderName: string) => {
 
 export const listFolderContents = async (accessToken: string, folderId: string) => {
   try {
+    // שינוי השאילתה כך שתכלול את כל סוגי הקבצים
     const query = `'${folderId}' in parents and trashed=false`;
-    const fields = 'files(id,name,description,mimeType,thumbnailLink,createdTime,modifiedTime,webContentLink,iconLink,size)';
-    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}&supportsAllDrives=true&includeItemsFromAllDrives=true`;
+    const fields = 'files(id,name,description,mimeType,thumbnailLink,createdTime,modifiedTime,webContentLink,iconLink,size,parents)';
+    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}&pageSize=1000&orderBy=createdTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=user,drive&spaces=drive`;
     
     console.log('Fetching from URL:', url);
     
     const response = await fetch(url, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error Response:', errorText);
       throw new Error(`Failed to list folder contents: ${response.statusText}`);
     }
 
     const data = await response.json();
     console.log('Full API response:', JSON.stringify(data, null, 2));
+    console.log('API Response Status:', response.status);
+    console.log('API Response Headers:', JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+    
     return data.files || [];
   } catch (error) {
     console.error('Error listing folder contents:', error);
