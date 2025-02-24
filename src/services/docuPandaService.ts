@@ -115,7 +115,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
     }
 
     // סטנדרטיזציה של המסמך
-    const standardizeResponse = await fetch(`${BASE_URL}/v2/standardize/batch`, {
+    const standardizeResponse = await fetch(`${BASE_URL}/standardize/batch`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
