@@ -10,5 +10,7 @@ export interface Document {
   fileName: string;
   description: string;
   type: 'bank_statement' | 'salary_slip' | 'property_record';
+  thumbnail: string;
+  uploadDate: Date;
   lastModified: Date;
 }

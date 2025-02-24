@@ -26,6 +26,8 @@ export const documents: { [key: string]: Document[] } = {
       fileName: 'תדפיס חשבון ינואר',
       description: 'תדפיס עו"ש לחודש ינואר 2024',
       type: 'bank_statement',
+      thumbnail: '/placeholder.svg',
+      uploadDate: new Date('2024-01-10'),
       lastModified: new Date('2024-01-15'),
     },
     {
@@ -33,6 +35,8 @@ export const documents: { [key: string]: Document[] } = {
       fileName: 'תלוש משכורת דצמבר',
       description: 'תלוש משכורת לחודש דצמבר 2023',
       type: 'salary_slip',
+      thumbnail: '/placeholder.svg',
+      uploadDate: new Date('2023-12-31'),
       lastModified: new Date('2024-01-01'),
     },
   ],

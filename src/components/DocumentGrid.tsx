@@ -21,13 +21,22 @@ const DocumentGrid = ({ documents, onDocumentUpdate }: DocumentGridProps) => {
           className="bg-white rounded-lg shadow-md p-4 transition-all duration-200 hover:shadow-lg"
         >
           <div className="space-y-3">
-            <input
-              className="w-full text-lg font-medium bg-transparent border-0 focus:ring-2 focus:ring-blue-500 rounded p-1"
-              value={doc.fileName}
-              onChange={(e) =>
-                onDocumentUpdate({ ...doc, fileName: e.target.value })
-              }
-            />
+            <div className="flex items-start space-x-4 space-x-reverse">
+              <img
+                src={doc.thumbnail}
+                alt={doc.fileName}
+                className="w-16 h-16 object-cover rounded border border-gray-200"
+              />
+              <div className="flex-1">
+                <input
+                  className="w-full text-lg font-medium bg-transparent border-0 focus:ring-2 focus:ring-blue-500 rounded p-1"
+                  value={doc.fileName}
+                  onChange={(e) =>
+                    onDocumentUpdate({ ...doc, fileName: e.target.value })
+                  }
+                />
+              </div>
+            </div>
             <select
               className="w-full bg-gray-50 border border-gray-300 rounded-md px-3 py-2"
               value={doc.type}
@@ -48,8 +57,9 @@ const DocumentGrid = ({ documents, onDocumentUpdate }: DocumentGridProps) => {
                 onDocumentUpdate({ ...doc, description: e.target.value })
               }
             />
-            <div className="text-sm text-gray-600 text-right">
-              עודכן: {format(doc.lastModified, 'dd/MM/yyyy')}
+            <div className="text-sm text-gray-600 space-y-1 text-right">
+              <div>הועלה: {format(doc.uploadDate, 'dd/MM/yyyy')}</div>
+              <div>עודכן: {format(doc.lastModified, 'dd/MM/yyyy')}</div>
             </div>
           </div>
         </div>
