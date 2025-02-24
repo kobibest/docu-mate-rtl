@@ -14,15 +14,19 @@ export const createRootFolder = async (accessToken: string) => {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify({
         name: 'brokerApp',
         mimeType: 'application/vnd.google-apps.folder',
+        fields: 'id,name',
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create root folder');
+      const errorData = await response.json();
+      console.error('Error response from Google Drive:', errorData);
+      throw new Error(`Failed to create root folder: ${response.status} ${response.statusText}`);
     }
 
     const folder = await response.json();
@@ -38,19 +42,23 @@ export const searchFolder = async (accessToken: string, folderName: string) => {
   try {
     const query = `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
     const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}`,
+      `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
         },
       }
     );
 
     if (!response.ok) {
-      throw new Error('Failed to search for folder');
+      const errorData = await response.json();
+      console.error('Error response from Google Drive:', errorData);
+      throw new Error(`Failed to search for folder: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('Search folder response:', data);
     return data.files?.[0] || null;
   } catch (error) {
     console.error('Error searching for folder:', error);
