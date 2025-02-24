@@ -1,3 +1,4 @@
+
 export const createRootFolder = async (accessToken: string) => {
   try {
     // בדיקה האם התיקייה כבר קיימת
@@ -60,7 +61,7 @@ export const searchFolder = async (accessToken: string, folderName: string) => {
 export const listFolderContents = async (accessToken: string, folderId: string) => {
   try {
     const query = `'${folderId}' in parents and trashed=false`;
-    const fields = 'nextPageToken,files(id,name,description,mimeType,thumbnailLink,createdTime,modifiedTime)';
+    const fields = 'files(id,name,description,mimeType,thumbnailLink,createdTime,modifiedTime,webContentLink,iconLink)';
     
     const response = await fetch(
       `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}`,
@@ -76,7 +77,7 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
     }
 
     const data = await response.json();
-    console.log('Raw API response:', data);
+    console.log('Full API response:', JSON.stringify(data, null, 2));
     return data.files || [];
   } catch (error) {
     console.error('Error listing folder contents:', error);

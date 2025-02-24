@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { Client, Document } from '@/types';
 import { listFolderContents } from './googleDrive';
@@ -31,15 +32,18 @@ export const createClientFolder = async (accessToken: string, parentFolderId: st
 
 export const loadExistingClients = async (accessToken: string, parentFolderId: string): Promise<Client[]> => {
   try {
-    const folders = await listFolderContents(accessToken, parentFolderId);
-    return folders
-      .filter(folder => folder.mimeType === 'application/vnd.google-apps.folder')
-      .map(folder => ({
-        id: uuidv4(),
-        name: folder.name,
-        documentCount: 0, // יעודכן בהמשך כשנטען את המסמכים
-        folderId: folder.id
-      }));
+    const files = await listFolderContents(accessToken, parentFolderId);
+    console.log('Files before filtering:', files);
+    
+    const folders = files.filter(file => file.mimeType === 'application/vnd.google-apps.folder');
+    console.log('Folders after filtering:', folders);
+    
+    return folders.map(folder => ({
+      id: uuidv4(),
+      name: folder.name,
+      documentCount: 0,
+      folderId: folder.id
+    }));
   } catch (error) {
     console.error('Error loading existing clients:', error);
     throw error;
@@ -62,16 +66,21 @@ export const createNewClient = async (
 
 export const loadClientDocuments = async (accessToken: string, folderId: string): Promise<Document[]> => {
   try {
+    console.log('Loading documents from folder:', folderId);
     const files = await listFolderContents(accessToken, folderId);
-    return files.map(file => ({
-      id: file.id,
-      fileName: file.name,
-      description: file.description || '',
-      type: 'bank_statement', // ברירת מחדל, נעדכן בהמשך
-      thumbnail: file.thumbnailLink || '/placeholder.svg',
-      uploadDate: new Date(file.createdTime),
-      lastModified: new Date(file.modifiedTime)
-    }));
+    console.log('Documents from API:', files);
+
+    return files
+      .filter(file => file.mimeType !== 'application/vnd.google-apps.folder')
+      .map(file => ({
+        id: file.id,
+        fileName: file.name,
+        description: file.description || '',
+        type: 'bank_statement', // ברירת מחדל
+        thumbnail: file.thumbnailLink || file.iconLink || '/placeholder.svg',
+        uploadDate: new Date(file.createdTime),
+        lastModified: new Date(file.modifiedTime)
+      }));
   } catch (error) {
     console.error('Error loading client documents:', error);
     throw error;
