@@ -1,7 +1,9 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { LogIn, LogOut } from "lucide-react";
 import { createRootFolder } from '@/services/googleDrive';
 
 interface LoginButtonProps {
@@ -10,6 +12,7 @@ interface LoginButtonProps {
 
 const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
   const { toast } = useToast();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const checkExistingToken = async () => {
@@ -18,12 +21,13 @@ const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
       
       if (accessToken && rootFolderId) {
         console.log('Found existing session, using stored folder ID:', rootFolderId);
+        setIsLoggedIn(true);
         onRootFolderCreated(rootFolderId);
       }
     };
 
     checkExistingToken();
-  }, []); // רק בטעינה הראשונית
+  }, []);
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -36,6 +40,7 @@ const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
         localStorage.setItem('root_folder_id', folder.id);
         
         console.log('Setting up new session with folder:', folder.id);
+        setIsLoggedIn(true);
         onRootFolderCreated(folder.id);
         
         toast({
@@ -61,14 +66,32 @@ const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
     }
   });
 
+  const handleLogout = () => {
+    localStorage.removeItem('google_access_token');
+    localStorage.removeItem('root_folder_id');
+    setIsLoggedIn(false);
+    // רענון הדף כדי לאפס את המצב של האפליקציה
+    window.location.reload();
+    
+    toast({
+      title: "התנתקות הצליחה",
+      description: "התנתקת בהצלחה מחשבון Google",
+    });
+  };
+
   return (
-    <div className="flex justify-center items-center p-4">
-      <button 
-        onClick={() => login()} 
-        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-      >
-        התחבר עם Google
-      </button>
+    <div className="flex justify-center items-center gap-4 p-4">
+      {!isLoggedIn ? (
+        <Button onClick={() => login()} variant="default">
+          <LogIn className="ml-2" />
+          התחבר עם Google
+        </Button>
+      ) : (
+        <Button onClick={handleLogout} variant="destructive">
+          <LogOut className="ml-2" />
+          התנתק מ-Google
+        </Button>
+      )}
     </div>
   );
 };
