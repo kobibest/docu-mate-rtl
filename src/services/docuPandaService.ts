@@ -5,8 +5,40 @@ import { Document } from '@/types';
 const BASE_URL = 'https://app.docupanda.io';
 const API_KEY = 'uqQPr9Id1rW4x3JkMRwyp3rk5gL2';
 
+const getFileContent = async (fileId: string): Promise<string> => {
+  const accessToken = localStorage.getItem('google_access_token');
+  if (!accessToken) {
+    throw new Error('No access token found');
+  }
+
+  // קבלת הקובץ מ-Google Drive
+  const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch file content');
+  }
+
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64data = (reader.result as string)?.split(',')[1] || '';
+      resolve(base64data);
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(blob);
+  });
+};
+
 export const analyzeDocument = async (document: Document): Promise<any> => {
   try {
+    // קבלת תוכן הקובץ ב-base64
+    const base64Content = await getFileContent(document.id);
+    
     // העלאת המסמך
     const uploadResponse = await fetch(`${BASE_URL}/document`, {
       method: 'POST',
@@ -16,12 +48,14 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
         'X-API-Key': API_KEY
       },
       body: JSON.stringify({
-        content: document.base64Content,
+        content: base64Content,
         filename: document.fileName
       })
     });
 
     if (!uploadResponse.ok) {
+      const errorData = await uploadResponse.json().catch(() => ({}));
+      console.error('Upload error details:', errorData);
       throw new Error('שגיאה בהעלאת המסמך');
     }
 
