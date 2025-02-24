@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
 import LoginButton from '@/components/LoginButton';
@@ -9,7 +9,6 @@ import '@fontsource/heebo';
 
 const Index = () => {
   const [rootFolderId, setRootFolderId] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
   
   const { 
     clients, 
@@ -27,7 +26,7 @@ const Index = () => {
     handleDocumentUpdate 
   } = useDocuments();
 
-  const handleClientSelect = (clientId: string) => {
+  const handleClientSelect = useCallback((clientId: string) => {
     console.log('Selected client:', clientId);
     setSelectedClient(clientId);
     
@@ -39,26 +38,22 @@ const Index = () => {
         }
       });
     }
-  };
+  }, [clients, loadClientDocuments, setSelectedClient, updateClientDocumentCount]);
 
   useEffect(() => {
-    if (!isInitialized) {
-      const storedFolderId = localStorage.getItem('root_folder_id');
-      if (storedFolderId) {
-        console.log('Initializing with root folder:', storedFolderId);
-        setRootFolderId(storedFolderId);
-        setIsInitialized(true);
-        loadClients(storedFolderId);
-      }
+    const storedFolderId = localStorage.getItem('root_folder_id');
+    if (storedFolderId) {
+      console.log('Initializing with root folder:', storedFolderId);
+      setRootFolderId(storedFolderId);
+      loadClients(storedFolderId);
     }
-  }, [isInitialized, loadClients]);
+  }, []); // רק בטעינה הראשונית
 
-  const handleRootFolderCreated = (folderId: string) => {
+  const handleRootFolderCreated = useCallback((folderId: string) => {
     console.log('Root folder created:', folderId);
     setRootFolderId(folderId);
-    setIsInitialized(true);
     loadClients(folderId);
-  };
+  }, [loadClients]);
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-heebo">
