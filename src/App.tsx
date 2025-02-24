@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"; // נצטרך להחליף את זה עם המזהה האמיתי
+const GOOGLE_CLIENT_ID = "870290176945-u71qvjcdbjgm5df27e391lnnbklcu5hq.apps.googleusercontent.com";
 
 const App = () => (
   <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
