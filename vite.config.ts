@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -14,6 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
+  base: "/your-repo-name/", // Add this line - replace "your-repo-name" with your actual repository name
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
