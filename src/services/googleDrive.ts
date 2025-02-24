@@ -61,7 +61,7 @@ export const searchFolder = async (accessToken: string, folderName: string) => {
 export const listFolderContents = async (accessToken: string, folderId: string) => {
   try {
     if (!folderId) {
-      console.error('No folder ID provided');
+      console.log('No folder ID provided');
       return [];
     }
 
@@ -97,7 +97,22 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
     console.log('API Response Status:', response.status);
     console.log('Full API response:', JSON.stringify(data, null, 2));
     
-    return data.files || [];
+    if (!data.files || !Array.isArray(data.files)) {
+      console.error('Invalid response format - expected files array:', data);
+      return [];
+    }
+
+    // נסנן קבצים שאינם תיקיות
+    const files = data.files.filter(file => {
+      const isValid = file.mimeType !== 'application/vnd.google-apps.folder';
+      if (!isValid) {
+        console.log('Filtered out folder:', file.name);
+      }
+      return isValid;
+    });
+
+    console.log('Filtered files:', files);
+    return files;
   } catch (error) {
     console.error('Error listing folder contents:', error);
     throw error;
@@ -106,6 +121,8 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
 
 export const uploadFile = async (accessToken: string, folderId: string, file: File) => {
   try {
+    console.log('Starting file upload to folder:', folderId);
+    
     // Step 1: Get upload URL
     const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
       method: 'POST',
@@ -120,13 +137,17 @@ export const uploadFile = async (accessToken: string, folderId: string, file: Fi
     });
 
     if (!response.ok) {
+      console.error('Failed to get upload URL:', response.statusText);
       throw new Error('Failed to initiate upload');
     }
 
     const uploadUrl = response.headers.get('Location');
     if (!uploadUrl) {
+      console.error('No upload URL received in response headers');
       throw new Error('No upload URL received');
     }
+
+    console.log('Got upload URL:', uploadUrl);
 
     // Step 2: Upload the file
     const uploadResponse = await fetch(uploadUrl, {
@@ -138,10 +159,12 @@ export const uploadFile = async (accessToken: string, folderId: string, file: Fi
     });
 
     if (!uploadResponse.ok) {
+      console.error('Failed to upload file:', uploadResponse.statusText);
       throw new Error('Failed to upload file');
     }
 
     const result = await uploadResponse.json();
+    console.log('File uploaded successfully:', result);
     return result;
   } catch (error) {
     console.error('Error uploading file:', error);
