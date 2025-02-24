@@ -49,15 +49,19 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
     console.log('File ID:', document.id);
     
     const requestBody = {
-      content: base64Content,
-      filename: document.fileName,
-      contentType: document.fileName.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'
+      document: {
+        content: base64Content,
+        filename: document.fileName,
+        contentType: document.fileName.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'
+      }
     };
 
     console.log('Request body:', {
-      ...requestBody,
-      content: `${base64Content.substring(0, 100)}... (truncated)`,
-      contentLength: base64Content.length
+      document: {
+        ...requestBody.document,
+        content: `${base64Content.substring(0, 100)}... (truncated)`,
+        contentLength: base64Content.length
+      }
     });
     
     // העלאת המסמך
