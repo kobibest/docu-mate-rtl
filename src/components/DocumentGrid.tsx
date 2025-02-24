@@ -4,8 +4,10 @@ import { documentTypes } from '@/data/mockData';
 import { format } from 'date-fns';
 import DocumentUploader from './DocumentUploader';
 import { updateDocumentInDrive } from '@/services/driveClientService';
-import { useToast } from "./ui/use-toast";
+import { analyzeDocument } from '@/services/docuPandaService';
+import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface DocumentGridProps {
   documents: Document[];
@@ -17,6 +19,7 @@ interface DocumentGridProps {
 const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onUploadComplete }: DocumentGridProps) => {
   const { toast } = useToast();
   const [localDocuments, setLocalDocuments] = useState<{ [key: string]: { description: string } }>({});
+  const [analyzingDocId, setAnalyzingDocId] = useState<string | null>(null);
   
   const handleDocumentUpdate = async (updatedDoc: Document) => {
     try {
@@ -43,7 +46,6 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
   };
 
   const handleDescriptionChange = (doc: Document, newDescription: string) => {
-    // עדכון מקומי של התיאור
     setLocalDocuments(prev => ({
       ...prev,
       [doc.id]: { ...prev[doc.id], description: newDescription }
@@ -51,10 +53,39 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
   };
 
   const handleDescriptionBlur = (doc: Document) => {
-    // שליחה לשרת רק כשהמשתמש מסיים להקליד (עוזב את השדה)
     const localDoc = localDocuments[doc.id];
     if (localDoc && localDoc.description !== doc.description) {
       handleDocumentUpdate({ ...doc, description: localDoc.description });
+    }
+  };
+
+  const handleAnalyzeDocument = async (doc: Document) => {
+    try {
+      setAnalyzingDocId(doc.id);
+      const results = await analyzeDocument(doc);
+      
+      // עדכון המסמך עם תוצאות הניתוח
+      const updatedDoc = {
+        ...doc,
+        analysisResults: results,
+        description: doc.description + '\n\nתוצאות ניתוח:\n' + JSON.stringify(results.data, null, 2)
+      };
+      
+      handleDocumentUpdate(updatedDoc);
+      
+      toast({
+        title: "הניתוח הושלם בהצלחה",
+        description: "המסמך נותח בהצלחה והתיאור עודכן",
+      });
+    } catch (error) {
+      console.error('Error analyzing document:', error);
+      toast({
+        title: "שגיאה בניתוח המסמך",
+        description: error instanceof Error ? error.message : "אירעה שגיאה בניתוח המסמך",
+        variant: "destructive",
+      });
+    } finally {
+      setAnalyzingDocId(null);
     }
   };
 
@@ -71,21 +102,34 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
             className="bg-white rounded-lg shadow-md p-4 transition-all duration-200 hover:shadow-lg"
           >
             <div className="space-y-3">
-              <div className="flex items-start space-x-4 space-x-reverse">
-                <img
-                  src={doc.thumbnail}
-                  alt={doc.fileName}
-                  className="w-16 h-16 object-cover rounded border border-gray-200"
-                />
-                <div className="flex-1">
-                  <input
-                    className="w-full text-lg font-medium bg-transparent border-0 focus:ring-2 focus:ring-blue-500 rounded p-1"
-                    value={doc.fileName}
-                    onChange={(e) =>
-                      handleDocumentUpdate({ ...doc, fileName: e.target.value })
-                    }
+              <div className="flex items-start justify-between space-x-4 space-x-reverse">
+                <div className="flex items-start space-x-4 space-x-reverse">
+                  <img
+                    src={doc.thumbnail}
+                    alt={doc.fileName}
+                    className="w-16 h-16 object-cover rounded border border-gray-200"
                   />
+                  <div className="flex-1">
+                    <input
+                      className="w-full text-lg font-medium bg-transparent border-0 focus:ring-2 focus:ring-blue-500 rounded p-1"
+                      value={doc.fileName}
+                      onChange={(e) =>
+                        handleDocumentUpdate({ ...doc, fileName: e.target.value })
+                      }
+                    />
+                  </div>
                 </div>
+                <button
+                  onClick={() => handleAnalyzeDocument(doc)}
+                  disabled={analyzingDocId === doc.id}
+                  className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {analyzingDocId === doc.id ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    'נתח'
+                  )}
+                </button>
               </div>
               <select
                 className="w-full bg-gray-50 border border-gray-300 rounded-md px-3 py-2"

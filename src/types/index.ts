@@ -14,4 +14,6 @@ export interface Document {
   thumbnail: string;
   uploadDate: Date;
   lastModified: Date;
+  base64Content?: string;
+  analysisResults?: any;
 }
