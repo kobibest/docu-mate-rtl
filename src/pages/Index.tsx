@@ -34,18 +34,22 @@ const Index = () => {
     const client = clients.find(c => c.id === clientId);
     if (client) {
       loadClientDocuments(client.folderId, clientId).then(count => {
-        updateClientDocumentCount(clientId, count);
+        if (count !== undefined) {
+          updateClientDocumentCount(clientId, count);
+        }
       });
     }
   };
 
   useEffect(() => {
-    const storedFolderId = localStorage.getItem('root_folder_id');
-    if (storedFolderId && !isInitialized) {
-      console.log('Initializing with root folder:', storedFolderId);
-      setRootFolderId(storedFolderId);
-      setIsInitialized(true);
-      loadClients(storedFolderId);
+    if (!isInitialized) {
+      const storedFolderId = localStorage.getItem('root_folder_id');
+      if (storedFolderId) {
+        console.log('Initializing with root folder:', storedFolderId);
+        setRootFolderId(storedFolderId);
+        setIsInitialized(true);
+        loadClients(storedFolderId);
+      }
     }
   }, [isInitialized, loadClients]);
 
@@ -82,7 +86,9 @@ const Index = () => {
                   const client = clients.find(c => c.id === selectedClient);
                   if (client) {
                     loadClientDocuments(client.folderId, selectedClient).then(count => {
-                      updateClientDocumentCount(selectedClient, count);
+                      if (count !== undefined) {
+                        updateClientDocumentCount(selectedClient, count);
+                      }
                     });
                   }
                 }}

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Client } from '@/types';
 import { createNewClient, loadExistingClients } from '@/services/driveClientService';
 import { useToast } from "@/components/ui/use-toast";
@@ -9,7 +9,7 @@ export const useClients = () => {
   const [selectedClient, setSelectedClient] = useState<string | undefined>();
   const { toast } = useToast();
 
-  const loadClients = async (folderId: string) => {
+  const loadClients = useCallback(async (folderId: string) => {
     console.log('Loading clients for folder:', folderId);
     const accessToken = localStorage.getItem('google_access_token');
     if (!accessToken) return;
@@ -26,9 +26,9 @@ export const useClients = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
-  const handleCreateClient = async (rootFolderId: string, name: string) => {
+  const handleCreateClient = useCallback(async (rootFolderId: string, name: string) => {
     const accessToken = localStorage.getItem('google_access_token');
     if (!accessToken || !rootFolderId) {
       toast({
@@ -54,13 +54,13 @@ export const useClients = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
-  const updateClientDocumentCount = (clientId: string, count: number) => {
+  const updateClientDocumentCount = useCallback((clientId: string, count: number) => {
     setClients(prev => prev.map(c => 
       c.id === clientId ? { ...c, documentCount: count } : c
     ));
-  };
+  }, []);
 
   return {
     clients,
