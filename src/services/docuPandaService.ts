@@ -3,7 +3,7 @@ import { toast } from '@/hooks/use-toast';
 import { Document } from '@/types';
 
 const BASE_URL = 'https://app.docupanda.io';
-const API_KEY = 'YOUR_API_KEY'; // TODO: להחליף במפתח אמיתי
+const API_KEY = 'uqQPr9Id1rW4x3JkMRwyp3rk5gL2';
 
 export const analyzeDocument = async (document: Document): Promise<any> => {
   try {
@@ -16,7 +16,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
         'X-API-Key': API_KEY
       },
       body: JSON.stringify({
-        content: document.base64Content, // נצטרך להוסיף את זה למודל
+        content: document.base64Content,
         filename: document.fileName
       })
     });
@@ -60,7 +60,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
       },
       body: JSON.stringify({
         documentIds: [documentId],
-        schemaId: 'mortgage_documents', // להתאים לסכמה הנכונה
+        schemaId: 'mortgage_documents',
         displayMode: 'auto',
         effortLevel: 'high'
       })
