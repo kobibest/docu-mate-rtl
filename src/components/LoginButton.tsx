@@ -11,10 +11,10 @@ const LoginButton = () => {
     
     try {
       // יצירת תיקיית השורש
-      const folder = await createRootFolder(credentialResponse.access_token);
+      const folder = await createRootFolder(credentialResponse.credential);
       
       // שמירת ה-access token ב-localStorage
-      localStorage.setItem('google_access_token', credentialResponse.access_token);
+      localStorage.setItem('google_access_token', credentialResponse.credential);
       
       toast({
         title: "התחברות הצליחה",
@@ -45,7 +45,6 @@ const LoginButton = () => {
         onError={handleError}
         text="continue_with"
         useOneTap
-        scope="https://www.googleapis.com/auth/drive.file"
       />
     </div>
   );
