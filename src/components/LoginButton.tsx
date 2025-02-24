@@ -31,9 +31,19 @@ const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      console.log('Login Success, getting root folder...');
+      console.log('Login Success, getting user info...');
       
       try {
+        // קבלת פרטי המשתמש
+        const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        
+        const userInfo = await userResponse.json();
+        console.log('User info:', userInfo);
+        localStorage.setItem('user_email', userInfo.email);
+        
+        console.log('Getting root folder...');
         const folder = await createRootFolder(tokenResponse.access_token);
         
         localStorage.setItem('google_access_token', tokenResponse.access_token);
@@ -56,7 +66,7 @@ const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
         });
       }
     },
-    scope: 'https://www.googleapis.com/auth/drive.file',
+    scope: 'https://www.googleapis.com/auth/drive.file email profile',
     onError: () => {
       toast({
         title: "שגיאה בהתחברות",
@@ -69,8 +79,8 @@ const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
   const handleLogout = () => {
     localStorage.removeItem('google_access_token');
     localStorage.removeItem('root_folder_id');
+    localStorage.removeItem('user_email');
     setIsLoggedIn(false);
-    // רענון הדף כדי לאפס את המצב של האפליקציה
     window.location.reload();
     
     toast({
