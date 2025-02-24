@@ -1,51 +1,53 @@
 
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, useGoogleLogin } from '@react-oauth/google';
 import { useToast } from "@/components/ui/use-toast";
 import { createRootFolder } from '@/services/googleDrive';
 
 const LoginButton = () => {
   const { toast } = useToast();
 
-  const handleSuccess = async (credentialResponse: any) => {
-    console.log('Login Success:', credentialResponse);
-    
-    try {
-      // יצירת תיקיית השורש
-      const folder = await createRootFolder(credentialResponse.credential);
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      console.log('Login Success:', tokenResponse);
       
-      // שמירת ה-access token ב-localStorage
-      localStorage.setItem('google_access_token', credentialResponse.credential);
-      
+      try {
+        // יצירת תיקיית השורש עם ה-access_token
+        const folder = await createRootFolder(tokenResponse.access_token);
+        
+        // שמירת ה-access token ב-localStorage
+        localStorage.setItem('google_access_token', tokenResponse.access_token);
+        
+        toast({
+          title: "התחברות הצליחה",
+          description: "התחברת בהצלחה עם חשבון Google ונוצרה תיקיית brokerApp",
+        });
+      } catch (error) {
+        console.error('Error in login process:', error);
+        toast({
+          title: "שגיאה ביצירת התיקייה",
+          description: "ההתחברות הצליחה אך הייתה בעיה ביצירת תיקיית brokerApp",
+          variant: "destructive",
+        });
+      }
+    },
+    scope: 'https://www.googleapis.com/auth/drive.file',
+    onError: () => {
       toast({
-        title: "התחברות הצליחה",
-        description: "התחברת בהצלחה עם חשבון Google ונוצרה תיקיית brokerApp",
-      });
-    } catch (error) {
-      console.error('Error in login process:', error);
-      toast({
-        title: "שגיאה ביצירת התיקייה",
-        description: "ההתחברות הצליחה אך הייתה בעיה ביצירת תיקיית brokerApp",
+        title: "שגיאה בהתחברות",
+        description: "אירעה שגיאה בתהליך ההתחברות. אנא נסה שוב.",
         variant: "destructive",
       });
     }
-  };
-
-  const handleError = () => {
-    toast({
-      title: "שגיאה בהתחברות",
-      description: "אירעה שגיאה בתהליך ההתחברות. אנא נסה שוב.",
-      variant: "destructive",
-    });
-  };
+  });
 
   return (
     <div className="flex justify-center items-center p-4">
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={handleError}
-        text="continue_with"
-        useOneTap
-      />
+      <button 
+        onClick={() => login()} 
+        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+      >
+        התחבר עם Google
+      </button>
     </div>
   );
 };
