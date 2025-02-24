@@ -62,8 +62,17 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
   try {
     const query = `'${folderId}' in parents and trashed=false`;
     const fields = 'files(id,name,description,mimeType,thumbnailLink,createdTime,modifiedTime)';
+    const params = new URLSearchParams({
+      q: query,
+      fields: fields,
+      pageSize: '100',
+      orderBy: 'name',
+      supportsAllDrives: 'true',
+      includeItemsFromAllDrives: 'true'
+    });
+
     const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}`,
+      `https://www.googleapis.com/drive/v3/files?${params.toString()}`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -76,7 +85,7 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
     }
 
     const data = await response.json();
-    console.log('Folder contents:', data); // נוסיף לוג לבדיקה
+    console.log('Folder contents raw response:', data); // נוסיף לוג מפורט יותר
     return data.files || [];
   } catch (error) {
     console.error('Error listing folder contents:', error);

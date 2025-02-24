@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
@@ -21,7 +20,7 @@ const Index = () => {
 
     try {
       const existingClients = await loadExistingClients(accessToken, folderId);
-      console.log('Loaded clients:', existingClients); // נוסיף לוג
+      console.log('Loaded clients:', existingClients);
       setClients(existingClients);
     } catch (error) {
       console.error('Error loading clients:', error);
@@ -34,38 +33,36 @@ const Index = () => {
   };
 
   const handleClientSelect = async (clientId: string) => {
-    console.log('Selected client:', clientId); // נוסיף לוג
+    console.log('Selected client:', clientId);
     setSelectedClient(clientId);
     
     const accessToken = localStorage.getItem('google_access_token');
     if (!accessToken) {
-      console.log('No access token found'); // נוסיף לוג
+      console.log('No access token found');
       return;
     }
 
     const client = clients.find(c => c.id === clientId);
     if (!client) {
-      console.log('Client not found:', clientId); // נוסיף לוג
+      console.log('Client not found:', clientId);
       return;
     }
 
-    console.log('Loading documents for client:', client); // נוסיף לוג
+    console.log('Loading documents for client:', client);
 
     try {
-      if (!clientDocuments[clientId]) {
-        const documents = await loadClientDocuments(accessToken, client.folderId);
-        console.log('Loaded documents:', documents); // נוסיף לוג
-        
-        setClientDocuments(prev => ({
-          ...prev,
-          [clientId]: documents
-        }));
-        
-        // עדכון מספר המסמכים בלקוח
-        setClients(prev => prev.map(c => 
-          c.id === clientId ? { ...c, documentCount: documents.length } : c
-        ));
-      }
+      const documents = await loadClientDocuments(accessToken, client.folderId);
+      console.log('Loaded documents:', documents);
+      
+      setClientDocuments(prev => ({
+        ...prev,
+        [clientId]: documents
+      }));
+      
+      // עדכון מספר המסמכים בלקוח
+      setClients(prev => prev.map(c => 
+        c.id === clientId ? { ...c, documentCount: documents.length } : c
+      ));
     } catch (error) {
       console.error('Error loading client documents:', error);
       toast({
@@ -78,11 +75,11 @@ const Index = () => {
 
   useEffect(() => {
     const storedFolderId = localStorage.getItem('root_folder_id');
-    if (storedFolderId) {
+    if (storedFolderId && !rootFolderId) {  // הוספנו בדיקה למניעת קריאות חוזרות
       setRootFolderId(storedFolderId);
       loadClients(storedFolderId);
     }
-  }, []);
+  }, [rootFolderId]);  // הוספנו תלות ב-rootFolderId
 
   const handleRootFolderCreated = (folderId: string) => {
     setRootFolderId(folderId);
