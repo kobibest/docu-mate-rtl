@@ -50,17 +50,21 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
     
     const requestBody = {
       document: {
-        content: base64Content,
-        filename: document.fileName,
-        contentType: document.fileName.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'
+        file: {
+          content: base64Content,
+          filename: document.fileName,
+          contentType: document.fileName.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'
+        }
       }
     };
 
     console.log('Request body:', {
       document: {
-        ...requestBody.document,
-        content: `${base64Content.substring(0, 100)}... (truncated)`,
-        contentLength: base64Content.length
+        file: {
+          ...requestBody.document.file,
+          content: `${base64Content.substring(0, 100)}... (truncated)`,
+          contentLength: base64Content.length
+        }
       }
     });
     
