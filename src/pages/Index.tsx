@@ -4,7 +4,7 @@ import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
 import LoginButton from '@/components/LoginButton';
 import { Client, Document } from '@/types';
-import { createNewClient, loadExistingClients } from '@/services/driveClientService';
+import { createNewClient, loadExistingClients, loadClientDocuments } from '@/services/driveClientService';
 import { useToast } from "@/components/ui/use-toast";
 import '@fontsource/heebo';
 
@@ -32,8 +32,38 @@ const Index = () => {
     }
   };
 
+  const handleClientSelect = async (clientId: string) => {
+    setSelectedClient(clientId);
+    const accessToken = localStorage.getItem('google_access_token');
+    if (!accessToken) return;
+
+    const client = clients.find(c => c.id === clientId);
+    if (!client) return;
+
+    try {
+      if (!clientDocuments[clientId]) {
+        const documents = await loadClientDocuments(accessToken, client.folderId);
+        setClientDocuments(prev => ({
+          ...prev,
+          [clientId]: documents
+        }));
+        
+        // עדכון מספר המסמכים בלקוח
+        setClients(prev => prev.map(c => 
+          c.id === clientId ? { ...c, documentCount: documents.length } : c
+        ));
+      }
+    } catch (error) {
+      console.error('Error loading client documents:', error);
+      toast({
+        title: "שגיאה בטעינת מסמכים",
+        description: "אירעה שגיאה בטעינת מסמכי הלקוח",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
-    // טעינת מזהה תיקיית השורש בעת טעינת הדף
     const storedFolderId = localStorage.getItem('root_folder_id');
     if (storedFolderId) {
       setRootFolderId(storedFolderId);
@@ -92,7 +122,7 @@ const Index = () => {
         <ClientList
           clients={clients}
           selectedClient={selectedClient}
-          onClientSelect={setSelectedClient}
+          onClientSelect={handleClientSelect}
           onCreateClient={handleCreateClient}
         />
         <main className="flex-1 overflow-y-auto p-6">

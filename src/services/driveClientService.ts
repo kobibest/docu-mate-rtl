@@ -1,6 +1,5 @@
-
 import { v4 as uuidv4 } from 'uuid';
-import { Client } from '@/types';
+import { Client, Document } from '@/types';
 import { listFolderContents } from './googleDrive';
 
 export const createClientFolder = async (accessToken: string, parentFolderId: string, clientName: string): Promise<string> => {
@@ -59,4 +58,22 @@ export const createNewClient = async (
     documentCount: 0,
     folderId
   };
+};
+
+export const loadClientDocuments = async (accessToken: string, folderId: string): Promise<Document[]> => {
+  try {
+    const files = await listFolderContents(accessToken, folderId);
+    return files.map(file => ({
+      id: file.id,
+      fileName: file.name,
+      description: file.description || '',
+      type: 'bank_statement', // ברירת מחדל, נעדכן בהמשך
+      thumbnail: file.thumbnailLink || '/placeholder.svg',
+      uploadDate: new Date(file.createdTime),
+      lastModified: new Date(file.modifiedTime)
+    }));
+  } catch (error) {
+    console.error('Error loading client documents:', error);
+    throw error;
+  }
 };
