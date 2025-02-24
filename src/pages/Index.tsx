@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
 import LoginButton from '@/components/LoginButton';
 import { Client, Document } from '@/types';
-import { createNewClient, loadExistingClients, loadClientDocuments } from '@/services/driveClientService';
+import { createNewClient, loadExistingClients, loadClientDocuments as loadDocs } from '@/services/driveClientService';
 import { useToast } from "@/components/ui/use-toast";
 import '@fontsource/heebo';
 
@@ -60,7 +61,7 @@ const Index = () => {
     console.log('Loading documents for client folder:', folderId);
 
     try {
-      const documents = await loadClientDocuments(accessToken, folderId);
+      const documents = await loadDocs(accessToken, folderId);
       console.log('Loaded documents:', documents);
       
       if (selectedClient) {
@@ -92,7 +93,7 @@ const Index = () => {
       setIsInitialized(true);
       loadClients(storedFolderId);
     }
-  }, [isInitialized]); // רק תלות ב-isInitialized
+  }, [isInitialized]);
 
   const handleRootFolderCreated = (folderId: string) => {
     console.log('Root folder created:', folderId);
@@ -132,7 +133,7 @@ const Index = () => {
   const handleDocumentUpdate = (updatedDoc: Document) => {
     if (!selectedClient) return;
 
-    setClientDocuments((prev) => ({
+    setClientDocuments(prev => ({
       ...prev,
       [selectedClient]: prev[selectedClient].map((doc) =>
         doc.id === updatedDoc.id ? { ...updatedDoc, lastModified: new Date() } : doc
