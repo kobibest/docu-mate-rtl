@@ -9,6 +9,7 @@ import '@fontsource/heebo';
 
 const Index = () => {
   const [rootFolderId, setRootFolderId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   const { 
     clients, 
@@ -47,7 +48,7 @@ const Index = () => {
       setRootFolderId(storedFolderId);
       loadClients(storedFolderId);
     }
-  }, []); // רק בטעינה הראשונית
+  }, [loadClients]);
 
   const handleRootFolderCreated = useCallback((folderId: string) => {
     console.log('Root folder created:', folderId);
@@ -55,17 +56,54 @@ const Index = () => {
     loadClients(folderId);
   }, [loadClients]);
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-heebo">
-      <LoginButton onRootFolderCreated={handleRootFolderCreated} />
-      <div className="flex h-screen">
-        <ClientList
-          clients={clients}
-          selectedClient={selectedClient}
-          onClientSelect={handleClientSelect}
-          onCreateClient={(name) => rootFolderId && handleCreateClient(rootFolderId, name)}
-        />
-        <main className="flex-1 overflow-y-auto p-6">
+      <div className="sticky top-0 z-10 bg-white shadow-sm p-4 flex justify-between items-center">
+        <button 
+          onClick={toggleSidebar}
+          className="md:hidden p-2 rounded-md hover:bg-gray-100"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d={isSidebarOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+            />
+          </svg>
+        </button>
+        <LoginButton onRootFolderCreated={handleRootFolderCreated} />
+      </div>
+      
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        <div className={`
+          ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
+          fixed top-16 right-0 bottom-0 z-20 w-64 
+          md:relative md:translate-x-0 md:top-0
+          transition-transform duration-300 ease-in-out
+        `}>
+          <ClientList
+            clients={clients}
+            selectedClient={selectedClient}
+            onClientSelect={handleClientSelect}
+            onCreateClient={(name) => rootFolderId && handleCreateClient(rootFolderId, name)}
+          />
+        </div>
+        
+        <main className={`
+          flex-1 p-4 md:p-6 
+          transition-all duration-300 ease-in-out
+          ${isSidebarOpen ? 'md:mr-64' : ''}
+        `}>
           <h1 className="text-2xl font-bold mb-6">ניהול מסמכים</h1>
           {selectedClient ? (
             isLoadingDocs ? (

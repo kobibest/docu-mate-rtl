@@ -41,30 +41,11 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
     }
   };
 
-  const handleTypeChange = (doc: Document, newType: Document['type']) => {
-    handleDocumentUpdate({ ...doc, type: newType });
-  };
-
-  const handleDescriptionChange = (doc: Document, newDescription: string) => {
-    setLocalDocuments(prev => ({
-      ...prev,
-      [doc.id]: { ...prev[doc.id], description: newDescription }
-    }));
-  };
-
-  const handleDescriptionBlur = (doc: Document) => {
-    const localDoc = localDocuments[doc.id];
-    if (localDoc && localDoc.description !== doc.description) {
-      handleDocumentUpdate({ ...doc, description: localDoc.description });
-    }
-  };
-
   const handleAnalyzeDocument = async (doc: Document) => {
     try {
       setAnalyzingDocId(doc.id);
       const results = await analyzeDocument(doc);
       
-      // עדכון המסמך עם תוצאות הניתוח
       const updatedDoc = {
         ...doc,
         analysisResults: results,
@@ -95,21 +76,21 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
         folderId={selectedClientFolderId} 
         onUploadComplete={onUploadComplete}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {documents.map((doc) => (
           <div
             key={doc.id}
             className="bg-white rounded-lg shadow-md p-4 transition-all duration-200 hover:shadow-lg"
           >
             <div className="space-y-3">
-              <div className="flex items-start justify-between space-x-4 space-x-reverse">
-                <div className="flex items-start space-x-4 space-x-reverse">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="flex items-start space-x-4 space-x-reverse w-full">
                   <img
                     src={doc.thumbnail}
                     alt={doc.fileName}
                     className="w-16 h-16 object-cover rounded border border-gray-200"
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <input
                       className="w-full text-lg font-medium bg-transparent border-0 focus:ring-2 focus:ring-blue-500 rounded p-1"
                       value={doc.fileName}
@@ -122,7 +103,7 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
                 <button
                   onClick={() => handleAnalyzeDocument(doc)}
                   disabled={analyzingDocId === doc.id}
-                  className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="w-full sm:w-auto px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   {analyzingDocId === doc.id ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -135,7 +116,7 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
                 className="w-full bg-gray-50 border border-gray-300 rounded-md px-3 py-2"
                 value={doc.type}
                 onChange={(e) =>
-                  handleTypeChange(doc, e.target.value as Document['type'])
+                  handleDocumentUpdate({ ...doc, type: e.target.value as Document['type'] })
                 }
               >
                 {Object.entries(documentTypes).map(([value, label]) => (
@@ -145,12 +126,20 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
                 ))}
               </select>
               <textarea
-                className="w-full min-h-[80px] bg-gray-50 border border-gray-300 rounded-md px-3 py-2"
+                className="w-full min-h-[80px] bg-gray-50 border border-gray-300 rounded-md px-3 py-2 resize-y"
                 value={localDocuments[doc.id]?.description ?? doc.description}
-                onChange={(e) => handleDescriptionChange(doc, e.target.value)}
-                onBlur={() => handleDescriptionBlur(doc)}
+                onChange={(e) => setLocalDocuments(prev => ({
+                  ...prev,
+                  [doc.id]: { ...prev[doc.id], description: e.target.value }
+                }))}
+                onBlur={() => {
+                  const localDoc = localDocuments[doc.id];
+                  if (localDoc && localDoc.description !== doc.description) {
+                    handleDocumentUpdate({ ...doc, description: localDoc.description });
+                  }
+                }}
               />
-              <div className="text-sm text-gray-600 space-y-1 text-right">
+              <div className="text-sm text-gray-600 space-y-1">
                 <div>הועלה: {format(doc.uploadDate, 'dd/MM/yyyy')}</div>
                 <div>עודכן: {format(doc.lastModified, 'dd/MM/yyyy')}</div>
               </div>
