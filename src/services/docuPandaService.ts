@@ -46,14 +46,18 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
     // קבלת תוכן הקובץ ב-base64
     const base64Content = await getFileContent(document.id);
     console.log('Sending document with name:', document.fileName);
+    console.log('File ID:', document.id);
     
     const requestBody = {
       content: base64Content,
-      filename: document.fileName
+      filename: document.fileName,
+      contentType: document.fileName.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'
     };
+
     console.log('Request body:', {
       ...requestBody,
-      content: `${base64Content.substring(0, 100)}... (truncated)`
+      content: `${base64Content.substring(0, 100)}... (truncated)`,
+      contentLength: base64Content.length
     });
     
     // העלאת המסמך
@@ -68,12 +72,15 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
     });
 
     if (!uploadResponse.ok) {
-      const errorData = await uploadResponse.json().catch(() => ({}));
+      const errorData = await uploadResponse.json();
       console.error('Upload error details:', errorData);
-      throw new Error('שגיאה בהעלאת המסמך');
+      console.error('Upload error status:', uploadResponse.status);
+      console.error('Upload error statusText:', uploadResponse.statusText);
+      throw new Error(`שגיאה בהעלאת המסמך: ${JSON.stringify(errorData)}`);
     }
 
     const { documentId, jobId } = await uploadResponse.json();
+    console.log('Document uploaded successfully. Document ID:', documentId, 'Job ID:', jobId);
 
     // המתנה לסיום עיבוד המסמך
     let status = 'processing';
@@ -92,6 +99,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
       
       const statusData = await statusResponse.json();
       status = statusData.status;
+      console.log('Processing status:', status);
       
       if (status === 'error') {
         throw new Error('שגיאה בעיבוד המסמך');
