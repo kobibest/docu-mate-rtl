@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
@@ -51,21 +50,30 @@ const Index = () => {
       return;
     }
 
-    console.log('Loading documents for client folder:', client.folderId);
+    await loadClientDocuments(client.folderId);
+  };
+
+  const loadClientDocuments = async (folderId: string) => {
+    const accessToken = localStorage.getItem('google_access_token');
+    if (!accessToken) return;
+
+    console.log('Loading documents for client folder:', folderId);
 
     try {
-      const documents = await loadClientDocuments(accessToken, client.folderId);
+      const documents = await loadClientDocuments(accessToken, folderId);
       console.log('Loaded documents:', documents);
       
-      setClientDocuments(prev => ({
-        ...prev,
-        [clientId]: documents
-      }));
-      
-      // עדכון מספר המסמכים בלקוח
-      setClients(prev => prev.map(c => 
-        c.id === clientId ? { ...c, documentCount: documents.length } : c
-      ));
+      if (selectedClient) {
+        setClientDocuments(prev => ({
+          ...prev,
+          [selectedClient]: documents
+        }));
+        
+        // עדכון מספר המסמכים בלקוח
+        setClients(prev => prev.map(c => 
+          c.id === selectedClient ? { ...c, documentCount: documents.length } : c
+        ));
+      }
     } catch (error) {
       console.error('Error loading client documents:', error);
       toast({
@@ -149,6 +157,13 @@ const Index = () => {
               <DocumentGrid
                 documents={clientDocuments[selectedClient]}
                 onDocumentUpdate={handleDocumentUpdate}
+                selectedClientFolderId={clients.find(c => c.id === selectedClient)?.folderId || ''}
+                onUploadComplete={() => {
+                  const client = clients.find(c => c.id === selectedClient);
+                  if (client) {
+                    loadClientDocuments(client.folderId);
+                  }
+                }}
               />
             ) : (
               <div className="text-center text-gray-500 mt-10">

@@ -1,4 +1,3 @@
-
 export const createRootFolder = async (accessToken: string) => {
   try {
     // בדיקה האם התיקייה כבר קיימת
@@ -81,6 +80,51 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
     return data.files || [];
   } catch (error) {
     console.error('Error listing folder contents:', error);
+    throw error;
+  }
+};
+
+export const uploadFile = async (accessToken: string, folderId: string, file: File) => {
+  try {
+    // Step 1: Get upload URL
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: file.name,
+        parents: [folderId]
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to initiate upload');
+    }
+
+    const uploadUrl = response.headers.get('Location');
+    if (!uploadUrl) {
+      throw new Error('No upload URL received');
+    }
+
+    // Step 2: Upload the file
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type,
+      },
+      body: file,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error('Failed to upload file');
+    }
+
+    const result = await uploadResponse.json();
+    return result;
+  } catch (error) {
+    console.error('Error uploading file:', error);
     throw error;
   }
 };
