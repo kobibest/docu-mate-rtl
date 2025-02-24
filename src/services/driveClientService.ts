@@ -35,6 +35,7 @@ export const loadExistingClients = async (accessToken: string, parentFolderId: s
     const files = await listFolderContents(accessToken, parentFolderId);
     console.log('Files before filtering:', files);
     
+    // נשנה את הסינון כך שנקבל רק תיקיות
     const folders = files.filter(file => file.mimeType === 'application/vnd.google-apps.folder');
     console.log('Folders after filtering:', folders);
     
