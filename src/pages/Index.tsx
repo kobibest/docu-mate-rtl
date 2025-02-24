@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
@@ -13,8 +14,10 @@ const Index = () => {
   const [clientDocuments, setClientDocuments] = useState<Record<string, Document[]>>({});
   const { toast } = useToast();
   const [rootFolderId, setRootFolderId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const loadClients = async (folderId: string) => {
+    console.log('Loading clients for folder:', folderId);
     const accessToken = localStorage.getItem('google_access_token');
     if (!accessToken) return;
 
@@ -48,7 +51,7 @@ const Index = () => {
       return;
     }
 
-    console.log('Loading documents for client:', client);
+    console.log('Loading documents for client folder:', client.folderId);
 
     try {
       const documents = await loadClientDocuments(accessToken, client.folderId);
@@ -75,14 +78,18 @@ const Index = () => {
 
   useEffect(() => {
     const storedFolderId = localStorage.getItem('root_folder_id');
-    if (storedFolderId && !rootFolderId) {  // הוספנו בדיקה למניעת קריאות חוזרות
+    if (storedFolderId && !isInitialized) {
+      console.log('Initializing with root folder:', storedFolderId);
       setRootFolderId(storedFolderId);
+      setIsInitialized(true);
       loadClients(storedFolderId);
     }
-  }, [rootFolderId]);  // הוספנו תלות ב-rootFolderId
+  }, [isInitialized]); // רק תלות ב-isInitialized
 
   const handleRootFolderCreated = (folderId: string) => {
+    console.log('Root folder created:', folderId);
     setRootFolderId(folderId);
+    setIsInitialized(true);
     loadClients(folderId);
   };
 
