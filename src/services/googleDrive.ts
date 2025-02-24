@@ -1,3 +1,4 @@
+
 export const createRootFolder = async (accessToken: string) => {
   try {
     // בדיקה האם התיקייה כבר קיימת
@@ -19,6 +20,11 @@ export const createRootFolder = async (accessToken: string) => {
         mimeType: 'application/vnd.google-apps.folder'
       }),
     });
+
+    if (response.status === 401) {
+      localStorage.removeItem('google_access_token');
+      throw new Error('UNAUTHORIZED');
+    }
 
     if (!response.ok) {
       throw new Error(`Failed to create folder: ${response.statusText}`);
@@ -48,9 +54,14 @@ export const setFolderPermissions = async (accessToken: string, folderId: string
       body: JSON.stringify({
         role: 'writer',
         type: 'user',
-        emailAddress: localStorage.getItem('user_email'), // נשתמש באימייל של המשתמש המחובר
+        emailAddress: localStorage.getItem('user_email'),
       }),
     });
+
+    if (response.status === 401) {
+      localStorage.removeItem('google_access_token');
+      throw new Error('UNAUTHORIZED');
+    }
 
     if (!response.ok) {
       throw new Error(`Failed to set folder permissions: ${response.statusText}`);
@@ -75,6 +86,11 @@ export const searchFolder = async (accessToken: string, folderName: string) => {
         },
       }
     );
+
+    if (response.status === 401) {
+      localStorage.removeItem('google_access_token');
+      throw new Error('UNAUTHORIZED');
+    }
 
     if (!response.ok) {
       throw new Error(`Failed to search for folder: ${response.statusText}`);
@@ -117,6 +133,12 @@ export const listFolderContents = async (accessToken: string, folderId: string) 
       },
     });
 
+    if (response.status === 401) {
+      localStorage.removeItem('google_access_token');
+      localStorage.removeItem('root_folder_id');
+      throw new Error('UNAUTHORIZED');
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('API Error Response:', errorText);
@@ -155,6 +177,11 @@ export const uploadFile = async (accessToken: string, folderId: string, file: Fi
         parents: [folderId]
       }),
     });
+
+    if (response.status === 401) {
+      localStorage.removeItem('google_access_token');
+      throw new Error('UNAUTHORIZED');
+    }
 
     if (!response.ok) {
       console.error('Failed to get upload URL:', response.statusText);

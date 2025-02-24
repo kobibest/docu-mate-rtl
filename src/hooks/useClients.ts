@@ -12,7 +12,14 @@ export const useClients = () => {
   const loadClients = useCallback(async (folderId: string) => {
     console.log('Loading clients for folder:', folderId);
     const accessToken = localStorage.getItem('google_access_token');
-    if (!accessToken) return;
+    if (!accessToken) {
+      toast({
+        title: "יש להתחבר מחדש",
+        description: "נדרשת התחברות מחדש לGoogle",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const existingClients = await loadExistingClients(accessToken, folderId);
@@ -20,11 +27,19 @@ export const useClients = () => {
       setClients(existingClients);
     } catch (error) {
       console.error('Error loading clients:', error);
-      toast({
-        title: "שגיאה בטעינת לקוחות",
-        description: "אירעה שגיאה בטעינת רשימת הלקוחות",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+        toast({
+          title: "יש להתחבר מחדש",
+          description: "נדרשת התחברות מחדש לGoogle",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "שגיאה בטעינת לקוחות",
+          description: "אירעה שגיאה בטעינת רשימת הלקוחות",
+          variant: "destructive",
+        });
+      }
     }
   }, [toast]);
 
@@ -48,11 +63,19 @@ export const useClients = () => {
       });
     } catch (error) {
       console.error('Error creating client:', error);
-      toast({
-        title: "שגיאה ביצירת לקוח",
-        description: "אירעה שגיאה ביצירת הלקוח. אנא נסה שוב.",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+        toast({
+          title: "יש להתחבר מחדש",
+          description: "נדרשת התחברות מחדש לGoogle",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "שגיאה ביצירת לקוח",
+          description: "אירעה שגיאה ביצירת הלקוח. אנא נסה שוב.",
+          variant: "destructive",
+        });
+      }
     }
   }, [toast]);
 
