@@ -1,3 +1,4 @@
+
 import { toast } from '@/hooks/use-toast';
 import { Document } from '@/types';
 
@@ -123,7 +124,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
       },
       body: JSON.stringify({
         documentId: documentId,
-        schemaId: 'mortgage_documents',
+        schemaId: 'bank_statements',  // שינוי ה-schema ל-bank_statements
         displayMode: 'auto',
         effortLevel: 'high'
       })
@@ -141,7 +142,7 @@ export const analyzeDocument = async (document: Document): Promise<any> => {
         },
         body: JSON.stringify({
           documentId: documentId,
-          schemaId: 'mortgage_documents',
+          schemaId: 'bank_statements',  // שינוי ה-schema ל-bank_statements
           displayMode: 'auto',
           effortLevel: 'high'
         })
