@@ -12,28 +12,30 @@ const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // בדיקה אם יש כבר טוקן שמור
     const checkExistingToken = async () => {
       const accessToken = localStorage.getItem('google_access_token');
       const rootFolderId = localStorage.getItem('root_folder_id');
       
       if (accessToken && rootFolderId) {
+        console.log('Found existing session, using stored folder ID:', rootFolderId);
         onRootFolderCreated(rootFolderId);
       }
     };
 
     checkExistingToken();
-  }, [onRootFolderCreated]);
+  }, []); // רק בטעינה הראשונית
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      console.log('Login Success:', tokenResponse);
+      console.log('Login Success, getting root folder...');
       
       try {
         const folder = await createRootFolder(tokenResponse.access_token);
         
         localStorage.setItem('google_access_token', tokenResponse.access_token);
         localStorage.setItem('root_folder_id', folder.id);
+        
+        console.log('Setting up new session with folder:', folder.id);
         onRootFolderCreated(folder.id);
         
         toast({
