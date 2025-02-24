@@ -66,7 +66,7 @@ const LoginButton = ({ onRootFolderCreated }: LoginButtonProps) => {
         });
       }
     },
-    scope: 'https://www.googleapis.com/auth/drive.file email profile',
+    scope: 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file email profile',
     onError: () => {
       toast({
         title: "שגיאה בהתחברות",
