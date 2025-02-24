@@ -21,6 +21,7 @@ const Index = () => {
 
     try {
       const existingClients = await loadExistingClients(accessToken, folderId);
+      console.log('Loaded clients:', existingClients); // נוסיף לוג
       setClients(existingClients);
     } catch (error) {
       console.error('Error loading clients:', error);
@@ -33,16 +34,28 @@ const Index = () => {
   };
 
   const handleClientSelect = async (clientId: string) => {
+    console.log('Selected client:', clientId); // נוסיף לוג
     setSelectedClient(clientId);
+    
     const accessToken = localStorage.getItem('google_access_token');
-    if (!accessToken) return;
+    if (!accessToken) {
+      console.log('No access token found'); // נוסיף לוג
+      return;
+    }
 
     const client = clients.find(c => c.id === clientId);
-    if (!client) return;
+    if (!client) {
+      console.log('Client not found:', clientId); // נוסיף לוג
+      return;
+    }
+
+    console.log('Loading documents for client:', client); // נוסיף לוג
 
     try {
       if (!clientDocuments[clientId]) {
         const documents = await loadClientDocuments(accessToken, client.folderId);
+        console.log('Loaded documents:', documents); // נוסיף לוג
+        
         setClientDocuments(prev => ({
           ...prev,
           [clientId]: documents
@@ -135,7 +148,7 @@ const Index = () => {
               />
             ) : (
               <div className="text-center text-gray-500 mt-10">
-                אין מסמכים ללקוח זה
+                טוען מסמכים...
               </div>
             )
           ) : (
