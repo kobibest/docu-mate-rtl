@@ -36,26 +36,6 @@ const Index = () => {
     }
   };
 
-  const handleClientSelect = async (clientId: string) => {
-    console.log('Selected client:', clientId);
-    setSelectedClient(clientId);
-    setClientDocuments(prev => ({ ...prev, [clientId]: [] })); // אתחול מערך ריק לפני הטעינה
-    
-    const accessToken = localStorage.getItem('google_access_token');
-    if (!accessToken) {
-      console.log('No access token found');
-      return;
-    }
-
-    const client = clients.find(c => c.id === clientId);
-    if (!client) {
-      console.log('Client not found:', clientId);
-      return;
-    }
-
-    await loadClientDocuments(client.folderId);
-  };
-
   const loadClientDocuments = async (folderId: string) => {
     const accessToken = localStorage.getItem('google_access_token');
     if (!accessToken) return;
@@ -91,6 +71,17 @@ const Index = () => {
     }
   };
 
+  const handleClientSelect = (clientId: string) => {
+    console.log('Selected client:', clientId);
+    setSelectedClient(clientId);
+    setClientDocuments(prev => ({ ...prev, [clientId]: [] })); // אתחול מערך ריק לפני הטעינה
+    
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      loadClientDocuments(client.folderId);
+    }
+  };
+
   useEffect(() => {
     const storedFolderId = localStorage.getItem('root_folder_id');
     if (storedFolderId && !isInitialized) {
@@ -100,15 +91,6 @@ const Index = () => {
       loadClients(storedFolderId);
     }
   }, [isInitialized]);
-
-  useEffect(() => {
-    if (selectedClient) {
-      const client = clients.find(c => c.id === selectedClient);
-      if (client) {
-        loadClientDocuments(client.folderId);
-      }
-    }
-  }, [selectedClient]); // רק כשמשתנה הלקוח הנבחר
 
   const handleRootFolderCreated = (folderId: string) => {
     console.log('Root folder created:', folderId);
