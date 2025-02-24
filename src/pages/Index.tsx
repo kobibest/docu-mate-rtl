@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import ClientList from '@/components/ClientList';
 import DocumentGrid from '@/components/DocumentGrid';
+import LoginButton from '@/components/LoginButton';
 import { clients, documents } from '@/data/mockData';
 import { Document } from '@/types';
 import '@fontsource/heebo';
@@ -23,6 +24,7 @@ const Index = () => {
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-heebo">
+      <LoginButton />
       <div className="flex h-screen">
         <ClientList
           clients={clients}
