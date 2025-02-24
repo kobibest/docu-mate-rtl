@@ -26,9 +26,40 @@ export const createRootFolder = async (accessToken: string) => {
 
     const folder = await response.json();
     console.log('Created root folder:', folder);
+
+    // הגדרת הרשאות לתיקייה החדשה
+    await setFolderPermissions(accessToken, folder.id);
+
     return folder;
   } catch (error) {
     console.error('Error in createRootFolder:', error);
+    throw error;
+  }
+};
+
+export const setFolderPermissions = async (accessToken: string, folderId: string) => {
+  try {
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}/permissions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        role: 'writer',
+        type: 'user',
+        emailAddress: localStorage.getItem('user_email'), // נשתמש באימייל של המשתמש המחובר
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to set folder permissions: ${response.statusText}`);
+    }
+
+    console.log('Successfully set folder permissions');
+    return await response.json();
+  } catch (error) {
+    console.error('Error setting folder permissions:', error);
     throw error;
   }
 };

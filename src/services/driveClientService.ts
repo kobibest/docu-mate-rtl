@@ -1,7 +1,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { Client, Document } from '@/types';
-import { listFolderContents } from './googleDrive';
+import { listFolderContents, setFolderPermissions } from './googleDrive';
 
 export const createClientFolder = async (accessToken: string, parentFolderId: string, clientName: string): Promise<string> => {
   try {
@@ -23,6 +23,10 @@ export const createClientFolder = async (accessToken: string, parentFolderId: st
     }
 
     const data = await response.json();
+    
+    // הגדרת הרשאות לתיקיית הלקוח
+    await setFolderPermissions(accessToken, data.id);
+    
     return data.id;
   } catch (error) {
     console.error('Error creating client folder:', error);
