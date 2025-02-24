@@ -1,0 +1,14 @@
+
+export interface Client {
+  id: string;
+  name: string;
+  documentCount: number;
+}
+
+export interface Document {
+  id: string;
+  fileName: string;
+  description: string;
+  type: 'bank_statement' | 'salary_slip' | 'property_record';
+  lastModified: Date;
+}
