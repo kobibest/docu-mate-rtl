@@ -86,7 +86,7 @@ const Index = () => {
           <ThemeToggle />
         </div>
         <img 
-          src="/docu-mate-rtl/logo.svg" 
+          src="logo.svg" 
           alt="DocuMate"
           className="h-8 w-auto logo-animation"
         />
