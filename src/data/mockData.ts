@@ -47,6 +47,8 @@ export const documents: { [key: string]: Document[] } = {
 
 export const documentTypes = {
   bank_statement: 'תדפיס עו"ש',
-  salary_slip: 'תלוש משכורת',
+  salary_slip: 'תלוש שכר',
+  id_card: 'תעודת זהות',
+  id_appendix: 'ספח תעודת זהות',
   property_record: 'נסח טאבו',
 };
