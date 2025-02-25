@@ -87,6 +87,20 @@
   animation: float 3s ease-in-out infinite;
 }
 
+/* Logo Animation */
+@keyframes write-logo {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.logo-animation {
+  animation: write-logo 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 /* Glass Effect */
 .glass {
   @apply bg-background/5 backdrop-blur-lg border border-border/50;

@@ -85,6 +85,11 @@ const Index = () => {
           </button>
           <ThemeToggle />
         </div>
+        <img 
+          src="/docu-mate-rtl/logo.svg" 
+          alt="DocuMate"
+          className="h-8 w-auto logo-animation"
+        />
         <LoginButton onRootFolderCreated={handleRootFolderCreated} />
       </div>
       
