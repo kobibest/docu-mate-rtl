@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Document } from '@/types';
 import { loadClientDocuments as loadDocs } from '@/services/driveClientService';
+import { documentAnalysisService } from '@/services/documentAnalysisService';
 import { useToast } from "@/components/ui/use-toast";
 
 export const useDocuments = () => {
@@ -20,9 +21,18 @@ export const useDocuments = () => {
       const documents = await loadDocs(accessToken, folderId);
       console.log('Loaded documents:', documents);
       
+      // טעינת תוצאות הניתוח
+      const analysisResults = await documentAnalysisService.loadAnalysisResults(accessToken, folderId);
+      
+      // הוספת תוצאות הניתוח למסמכים
+      const documentsWithAnalysis = documents.map(doc => ({
+        ...doc,
+        analysisResults: analysisResults[doc.id]?.results
+      }));
+      
       setClientDocuments(prev => ({
         ...prev,
-        [selectedClient]: documents
+        [selectedClient]: documentsWithAnalysis
       }));
       
       return documents.length;
@@ -39,8 +49,36 @@ export const useDocuments = () => {
     }
   };
 
-  const handleDocumentUpdate = (selectedClient: string, updatedDoc: Document) => {
+  const handleDocumentUpdate = async (selectedClient: string, updatedDoc: Document) => {
     if (!selectedClient) return;
+
+    const accessToken = localStorage.getItem('google_access_token');
+    if (!accessToken) return;
+
+    const clientDocs = clientDocuments[selectedClient];
+    if (!clientDocs) return;
+
+    const clientFolder = clientDocs[0]?.folderId;
+    if (!clientFolder) return;
+
+    // אם יש תוצאות ניתוח, נשמור אותן
+    if (updatedDoc.analysisResults) {
+      try {
+        await documentAnalysisService.saveAnalysisResult(
+          accessToken,
+          clientFolder,
+          updatedDoc,
+          updatedDoc.analysisResults
+        );
+      } catch (error) {
+        console.error('Error saving analysis results:', error);
+        toast({
+          title: "שגיאה בשמירת תוצאות הניתוח",
+          description: "אירעה שגיאה בשמירת תוצאות הניתוח",
+          variant: "destructive",
+        });
+      }
+    }
 
     setClientDocuments(prev => ({
       ...prev,
