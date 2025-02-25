@@ -16,23 +16,25 @@ const ClientList = ({ clients, selectedClient, onClientSelect, onCreateClient }:
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <div className="w-full h-full overflow-y-auto bg-white shadow-lg">
-      <div className="sticky top-0 bg-white p-4 border-b border-gray-200 z-10">
+    <div className="w-full h-full overflow-y-auto glass">
+      <div className="sticky top-0 glass border-b border-gray-700/50 p-4 z-10">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">לקוחות</h2>
+          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            לקוחות
+          </h2>
           <button
             onClick={() => setIsDialogOpen(true)}
-            className="p-1 hover:bg-blue-50 rounded-full transition-colors"
+            className="p-2 hover:bg-white/10 rounded-full transition-all duration-300 transform hover:scale-105"
             title="הוסף לקוח חדש"
           >
-            <PlusCircle className="w-6 h-6 text-blue-600" />
+            <PlusCircle className="w-6 h-6 text-blue-400" />
           </button>
         </div>
       </div>
       
       <div className="p-4 space-y-2">
         {clients.length === 0 ? (
-          <div className="text-center text-gray-500 py-4">
+          <div className="text-center text-gray-400 py-4 glass rounded-lg">
             אין לקוחות עדיין
           </div>
         ) : (
@@ -41,15 +43,15 @@ const ClientList = ({ clients, selectedClient, onClientSelect, onCreateClient }:
               key={client.id}
               onClick={() => onClientSelect(client.id)}
               className={cn(
-                "w-full p-3 text-right rounded-lg transition-all duration-200",
-                "hover:bg-blue-50",
+                "w-full p-4 rounded-xl transition-all duration-300 border border-transparent",
+                "hover:border-blue-500/30 hover:bg-white/5",
                 selectedClient === client.id
-                  ? "bg-blue-100 shadow-sm"
-                  : "bg-transparent"
+                  ? "bg-white/10 border-blue-500/50 shadow-lg shadow-blue-500/20"
+                  : "glass"
               )}
             >
-              <div className="font-medium">{client.name}</div>
-              <div className="text-sm text-gray-600">
+              <div className="font-medium text-lg">{client.name}</div>
+              <div className="text-sm text-gray-400">
                 {client.documentCount} מסמכים
               </div>
             </button>

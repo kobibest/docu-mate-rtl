@@ -71,28 +71,28 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <DocumentUploader 
         folderId={selectedClientFolderId} 
         onUploadComplete={onUploadComplete}
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {documents.map((doc) => (
           <div
             key={doc.id}
-            className="bg-white rounded-lg shadow-md p-4 transition-all duration-200 hover:shadow-lg"
+            className="glass rounded-xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 border border-gray-700/50 hover:border-blue-500/30 group"
           >
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div className="flex items-start space-x-4 space-x-reverse w-full">
                   <img
                     src={doc.thumbnail}
                     alt={doc.fileName}
-                    className="w-16 h-16 object-cover rounded border border-gray-200"
+                    className="w-16 h-16 object-cover rounded-lg border border-gray-700/50 group-hover:border-blue-500/30 transition-all duration-300"
                   />
                   <div className="flex-1 min-w-0">
                     <input
-                      className="w-full text-lg font-medium bg-transparent border-0 focus:ring-2 focus:ring-blue-500 rounded p-1"
+                      className="w-full text-lg font-medium bg-transparent border-0 focus:ring-2 focus:ring-blue-500 rounded-lg p-2 transition-all duration-300"
                       value={doc.fileName}
                       onChange={(e) =>
                         handleDocumentUpdate({ ...doc, fileName: e.target.value })
@@ -103,7 +103,7 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
                 <button
                   onClick={() => handleAnalyzeDocument(doc)}
                   disabled={analyzingDocId === doc.id}
-                  className="w-full sm:w-auto px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 disabled:opacity-50 hover:shadow-lg hover:shadow-blue-600/20"
                 >
                   {analyzingDocId === doc.id ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -113,20 +113,20 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
                 </button>
               </div>
               <select
-                className="w-full bg-gray-50 border border-gray-300 rounded-md px-3 py-2"
+                className="w-full bg-white/5 border border-gray-700/50 rounded-lg px-4 py-2 transition-all duration-300 focus:border-blue-500/50"
                 value={doc.type}
                 onChange={(e) =>
                   handleDocumentUpdate({ ...doc, type: e.target.value as Document['type'] })
                 }
               >
                 {Object.entries(documentTypes).map(([value, label]) => (
-                  <option key={value} value={value}>
+                  <option key={value} value={value} className="bg-gray-900">
                     {label}
                   </option>
                 ))}
               </select>
               <textarea
-                className="w-full min-h-[80px] bg-gray-50 border border-gray-300 rounded-md px-3 py-2 resize-y"
+                className="w-full min-h-[100px] bg-white/5 border border-gray-700/50 rounded-lg px-4 py-2 resize-y transition-all duration-300 focus:border-blue-500/50"
                 value={localDocuments[doc.id]?.description ?? doc.description}
                 onChange={(e) => setLocalDocuments(prev => ({
                   ...prev,
@@ -139,7 +139,7 @@ const DocumentGrid = ({ documents, onDocumentUpdate, selectedClientFolderId, onU
                   }
                 }}
               />
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className="text-sm text-gray-400 space-y-1">
                 <div>הועלה: {format(doc.uploadDate, 'dd/MM/yyyy')}</div>
                 <div>עודכן: {format(doc.lastModified, 'dd/MM/yyyy')}</div>
               </div>

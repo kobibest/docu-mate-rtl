@@ -61,14 +61,14 @@ const Index = () => {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 font-heebo">
-      <div className="sticky top-0 z-10 bg-white shadow-sm p-4 flex justify-between items-center">
+    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 font-heebo">
+      <div className="sticky top-0 z-10 glass border-b border-gray-700/50 backdrop-blur-lg p-4 flex justify-between items-center">
         <button 
           onClick={toggleSidebar}
-          className="md:hidden p-2 rounded-md hover:bg-gray-100"
+          className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-all duration-300"
         >
           <svg
-            className="w-6 h-6"
+            className="w-6 h-6 text-gray-300"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -87,9 +87,10 @@ const Index = () => {
       <div className="flex min-h-[calc(100vh-4rem)]">
         <div className={`
           ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
-          fixed top-16 right-0 bottom-0 z-20 w-64 
+          fixed top-16 right-0 bottom-0 z-20 w-72 
           md:relative md:translate-x-0 md:top-0
-          transition-transform duration-300 ease-in-out
+          transition-all duration-300 ease-in-out
+          border-l border-gray-700/50
         `}>
           <ClientList
             clients={clients}
@@ -100,14 +101,16 @@ const Index = () => {
         </div>
         
         <main className={`
-          flex-1 p-4 md:p-6 
+          flex-1 p-6 md:p-8 
           transition-all duration-300 ease-in-out
-          ${isSidebarOpen ? 'md:mr-64' : ''}
+          ${isSidebarOpen ? 'md:mr-72' : ''}
         `}>
-          <h1 className="text-2xl font-bold mb-6">ניהול מסמכים</h1>
+          <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            ניהול מסמכים
+          </h1>
           {selectedClient ? (
             isLoadingDocs ? (
-              <div className="text-center text-gray-500 mt-10">
+              <div className="text-center text-gray-400 mt-10 glass p-8 rounded-xl animate-pulse">
                 טוען מסמכים...
               </div>
             ) : clientDocuments[selectedClient] ? (
@@ -127,12 +130,12 @@ const Index = () => {
                 }}
               />
             ) : (
-              <div className="text-center text-gray-500 mt-10">
+              <div className="text-center text-gray-400 mt-10 glass p-8 rounded-xl">
                 אין מסמכים בתיקייה זו
               </div>
             )
           ) : (
-            <div className="text-center text-gray-500 mt-10">
+            <div className="text-center text-gray-400 mt-10 glass p-8 rounded-xl">
               בחר לקוח כדי להציג את המסמכים
             </div>
           )}
