@@ -16,4 +16,5 @@ export interface Document {
   lastModified: Date;
   base64Content?: string;
   analysisResults?: any;
+  folderId: string;  // הוספנו את שדה ה-folderId
 }

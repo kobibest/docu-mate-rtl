@@ -27,6 +27,7 @@ export const useDocuments = () => {
       // הוספת תוצאות הניתוח למסמכים
       const documentsWithAnalysis = documents.map(doc => ({
         ...doc,
+        folderId, // הוספת ה-folderId לכל מסמך
         analysisResults: analysisResults[doc.id]?.results
       }));
       
@@ -55,18 +56,12 @@ export const useDocuments = () => {
     const accessToken = localStorage.getItem('google_access_token');
     if (!accessToken) return;
 
-    const clientDocs = clientDocuments[selectedClient];
-    if (!clientDocs) return;
-
-    const clientFolder = clientDocs[0]?.folderId;
-    if (!clientFolder) return;
-
     // אם יש תוצאות ניתוח, נשמור אותן
     if (updatedDoc.analysisResults) {
       try {
         await documentAnalysisService.saveAnalysisResult(
           accessToken,
-          clientFolder,
+          updatedDoc.folderId, // שימוש ב-folderId מהמסמך עצמו
           updatedDoc,
           updatedDoc.analysisResults
         );
