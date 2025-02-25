@@ -5,6 +5,7 @@ import DocumentGrid from '@/components/DocumentGrid';
 import LoginButton from '@/components/LoginButton';
 import { useClients } from '@/hooks/useClients';
 import { useDocuments } from '@/hooks/useDocuments';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import '@fontsource/heebo';
 
 const Index = () => {
@@ -61,26 +62,29 @@ const Index = () => {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 font-heebo">
-      <div className="sticky top-0 z-10 glass border-b border-gray-700/50 backdrop-blur-lg p-4 flex justify-between items-center">
-        <button 
-          onClick={toggleSidebar}
-          className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-all duration-300"
-        >
-          <svg
-            className="w-6 h-6 text-gray-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-background to-background/80 font-heebo">
+      <div className="sticky top-0 z-10 glass border-b border-border/50 backdrop-blur-lg p-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={toggleSidebar}
+            className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-all duration-300"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d={isSidebarOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
-            />
-          </svg>
-        </button>
+            <svg
+              className="w-6 h-6 text-foreground"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={isSidebarOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+              />
+            </svg>
+          </button>
+          <ThemeToggle />
+        </div>
         <LoginButton onRootFolderCreated={handleRootFolderCreated} />
       </div>
       
