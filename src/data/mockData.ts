@@ -32,6 +32,7 @@ export const documents: { [key: string]: Document[] } = {
       thumbnail: '/placeholder.svg',
       uploadDate: new Date('2024-01-10'),
       lastModified: new Date('2024-01-15'),
+      folderId: 'mock-folder-1'  // הוספנו את שדה ה-folderId
     },
     {
       id: '2',
@@ -41,6 +42,7 @@ export const documents: { [key: string]: Document[] } = {
       thumbnail: '/placeholder.svg',
       uploadDate: new Date('2023-12-31'),
       lastModified: new Date('2024-01-01'),
+      folderId: 'mock-folder-1'  // הוספנו את שדה ה-folderId
     },
   ],
 };
